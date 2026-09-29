@@ -8,7 +8,7 @@
     "build": "electron-builder --win portable",
     "build:win": "electron-builder --win portable",
     "build:linux": "electron-builder --linux AppImage",
-    "build:mac": "electron-builder --mac dmg zip",
+    "build:mac": "electron-builder --mac dmg",
     "build:all": "electron-builder -wlm"
   },
   "keywords": [
@@ -37,13 +37,13 @@
       "icon": "icon.ico"
     },
     "portable": {
-      "artifactName": "MAGNITOLA-Windows.exe"
+      "artifactName": "MAGNITOLA-Windows.${ext}"
     },
     "linux": {
       "target": [
         "AppImage"
       ],
-      "artifactName": "MAGNITOLA-Linux.AppImage",
+      "artifactName": "MAGNITOLA-Linux.${ext}",
       "icon": "magnitolalogo.png",
       "category": "Audio"
     },
@@ -51,9 +51,10 @@
       "target": [
         "dmg"
       ],
-      "artifactName": "MAGNITOLA-macOS.dmg",
+      "artifactName": "MAGNITOLA-macOS.${ext}",
       "icon": "magnitolalogo.png",
-      "category": "public.app-category.music"
+      "category": "public.app-category.music",
+      "identity": null
     },
     "files": [
       "index.html",
