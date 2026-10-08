@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="magnitolalogo.png" alt="MAGNITOLA" width="220" />
+</p>
+
 # MAGNITOLA
 
 Music downloader.
