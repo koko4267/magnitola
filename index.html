@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAGNITOLA</title>
+  <link rel="icon" type="image/png" href="magnitolalogo.png">
+  <style>
+    /* ==========================================================================
+       CLEAN RETRO DESKTOP UI (Zero radius, Zero blur, Solid palette)
+       ========================================================================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    :root {
+      --bg-main: #4c5844;
+      --bg-header: #3b4435;
+      --bg-dark: #282e22;
+      --bg-panel: #242a20;
+      --bg-input: #1c2219;
+      --border-highlight: #6b7c61;
+      --border-shadow: #1e2419;
+      --border-light: #5d6d53;
+      --border-dark: #171c14;
+      --btn-bg: #4e5a46;
+      --btn-hover: #586650;
+      --btn-active: #384232;
+      --text-main: #d0dcce;
+      --text-bright: #ffffff;
+      --text-muted: #8c9c86;
+      --green-bar: #95c34e;
+      --green-dark: #7aa53d;
+      --accent-gold: #e2c174;
+      --accent-red: #d15656;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: "Tahoma", "Segoe UI", Arial, sans-serif;
+      font-size: 11px;
+      line-height: 1.35;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* App Root Container */
+    .app-container {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: var(--bg-main);
+    }
+
+    /* Main Download Pane (Left) */
+    .main-pane {
+      flex: 1;
+      min-width: 0;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+    }
+
+    /* Groupbox */
+    .groupbox {
+      border-top: 1px solid var(--border-highlight);
+      border-left: 1px solid var(--border-highlight);
+      border-right: 1px solid var(--border-shadow);
+      border-bottom: 1px solid var(--border-shadow);
+      padding: 10px;
+      position: relative;
+      background-color: var(--bg-main);
+    }
+
+    .groupbox-title {
+      font-weight: bold;
+      color: var(--accent-gold);
+      font-size: 11px;
+      margin-bottom: 8px;
+    }
+
+    /* Buttons */
+    .btn {
+      background-color: var(--btn-bg);
+      color: var(--text-main);
+      border-top: 1px solid var(--border-highlight);
+      border-left: 1px solid var(--border-highlight);
+      border-bottom: 1px solid var(--border-shadow);
+      border-right: 1px solid var(--border-shadow);
+      padding: 4px 12px;
+      font-family: "Tahoma", sans-serif;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 26px;
+      white-space: nowrap;
+    }
+
+    .btn:hover:not(:disabled) {
+      background-color: var(--btn-hover);
+      color: var(--text-bright);
+    }
+
+    .btn:active:not(:disabled) {
+      border-top: 1px solid var(--border-shadow);
+      border-left: 1px solid var(--border-shadow);
+      border-bottom: 1px solid var(--border-highlight);
+      border-right: 1px solid var(--border-highlight);
+      background-color: var(--btn-active);
+      color: var(--text-bright);
+    }
+
+    .btn:disabled {
+      background-color: #384033;
+      color: #636f5c;
+      border-color: #434c3d;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      color: #ffffff;
+      background-color: #55664c;
+      border-top-color: #7b946d;
+      border-left-color: #7b946d;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background-color: #617556;
+    }
+
+    .btn-sm {
+      height: 22px;
+      padding: 2px 8px;
+      font-size: 10px;
+    }
+
+    /* Text Input */
+    .input-text {
+      background-color: var(--bg-input);
+      color: var(--text-bright);
+      border-top: 1px solid var(--border-dark);
+      border-left: 1px solid var(--border-dark);
+      border-bottom: 1px solid var(--border-light);
+      border-right: 1px solid var(--border-light);
+      padding: 4px 8px;
+      font-family: "Lucida Console", "Consolas", monospace;
+      font-size: 11px;
+      height: 26px;
+      width: 100%;
+      user-select: text;
+    }
+
+    .input-text:focus {
+      outline: 1px solid var(--green-bar);
+    }
+
+    .url-bar-row {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    /* Download Card */
+    .download-card {
+      display: flex;
+      gap: 12px;
+      padding: 10px;
+      background-color: var(--bg-panel);
+      border-top: 1px solid var(--border-dark);
+      border-left: 1px solid var(--border-dark);
+      border-bottom: 1px solid var(--border-light);
+      border-right: 1px solid var(--border-light);
+    }
+
+    .album-art-box {
+      width: 84px;
+      height: 84px;
+      min-width: 84px;
+      background-color: #171c14;
+      border: 1px solid var(--bg-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .album-art-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .album-art-placeholder {
+      color: var(--accent-gold);
+      font-size: 28px;
+      font-weight: bold;
+      font-family: "Tahoma", sans-serif;
+      user-select: none;
+    }
+
+    .track-details-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+    }
+
+    .track-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: var(--text-bright);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .track-artist {
+      font-size: 11px;
+      color: var(--accent-gold);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Retro Progress Bar */
+    .progress-track {
+      background-color: #171c14;
+      height: 18px;
+      border-top: 1px solid #11140e;
+      border-left: 1px solid #11140e;
+      border-bottom: 1px solid var(--border-light);
+      border-right: 1px solid var(--border-light);
+      position: relative;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: repeating-linear-gradient(
+        90deg,
+        var(--green-bar) 0px,
+        var(--green-bar) 7px,
+        var(--green-dark) 7px,
+        var(--green-dark) 9px
+      );
+      transition: width 0.1s linear;
+    }
+
+    .progress-text {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: bold;
+      color: #ffffff;
+      text-shadow: 1px 1px 0px #000;
+    }
+
+    .download-stats-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 4px;
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: "Lucida Console", "Consolas", monospace;
+    }
+
+    /* Quotes Box */
+    .quote-box {
+      margin-top: 6px;
+      padding: 4px 8px;
+      background-color: #21261d;
+      border: 1px solid #1b2017;
+      color: var(--accent-gold);
+      font-style: italic;
+      font-size: 11px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Bottom Controls */
+    .bottom-controls-row {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bottom-right-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Save Path Info */
+    .save-path-row {
+      padding: 4px 8px;
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-shadow);
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 280px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .save-path-row strong {
+      color: var(--text-bright);
+    }
+
+    /* Try Syncline Promo Widget */
+    .syncline-widget {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--text-main);
+      background-color: var(--bg-panel);
+      border-top: 1px solid var(--border-dark);
+      border-left: 1px solid var(--border-dark);
+      border-bottom: 1px solid var(--border-light);
+      border-right: 1px solid var(--border-light);
+      padding: 3px 8px;
+      height: 28px;
+      cursor: pointer;
+      transition: background-color 0.1s;
+    }
+
+    .syncline-widget:hover {
+      background-color: #2e3629;
+    }
+
+    .syncline-widget:hover .syncline-btn {
+      background-color: var(--btn-hover);
+      color: #ffffff;
+    }
+
+    .syncline-logo-img {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .syncline-text {
+      font-size: 11px;
+      font-weight: bold;
+      color: var(--accent-gold);
+      letter-spacing: 0.3px;
+    }
+
+    .syncline-btn {
+      background-color: var(--btn-bg);
+      color: var(--text-bright);
+      border-top: 1px solid var(--border-highlight);
+      border-left: 1px solid var(--border-highlight);
+      border-bottom: 1px solid var(--border-shadow);
+      border-right: 1px solid var(--border-shadow);
+      padding: 1px 6px;
+      font-size: 9px;
+      font-weight: bold;
+      height: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Language Toggle Button with Flag */
+    .single-lang-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--btn-bg);
+      border-top: 1px solid var(--border-highlight);
+      border-left: 1px solid var(--border-highlight);
+      border-bottom: 1px solid var(--border-shadow);
+      border-right: 1px solid var(--border-shadow);
+      color: var(--text-bright);
+      padding: 2px 8px;
+      height: 24px;
+      font-size: 10px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .single-lang-btn:hover {
+      background-color: var(--btn-hover);
+    }
+
+    .single-lang-btn:active {
+      border-top: 1px solid var(--border-shadow);
+      border-left: 1px solid var(--border-shadow);
+      border-bottom: 1px solid var(--border-highlight);
+      border-right: 1px solid var(--border-highlight);
+      background-color: var(--btn-active);
+    }
+
+    .flag-icon {
+      width: 15px;
+      height: 10px;
+      display: inline-block;
+      border: 1px solid #000;
+    }
+
+    /* ==========================================================================
+       RETRO MUSIC PLAYER SIDEBAR (Right)
+       ========================================================================== */
+    .player-sidebar {
+      width: 320px;
+      min-width: 300px;
+      background-color: var(--bg-header);
+      border-left: 2px solid var(--border-shadow);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* Large Album Artwork View */
+    .large-art-container {
+      padding: 10px;
+      background-color: var(--bg-panel);
+      border-bottom: 1px solid var(--border-shadow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .large-art-box {
+      width: 170px;
+      height: 170px;
+      max-width: 100%;
+      aspect-ratio: 1;
+      background-color: #171c14;
+      border-top: 1px solid var(--border-dark);
+      border-left: 1px solid var(--border-dark);
+      border-bottom: 1px solid var(--border-light);
+      border-right: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .large-art-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .large-art-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      user-select: none;
+    }
+
+    .large-art-placeholder-icon {
+      font-size: 52px;
+      color: var(--accent-gold);
+      line-height: 1;
+    }
+
+    .large-art-placeholder-label {
+      font-size: 10px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+    }
+
+    .large-art-details {
+      width: 100%;
+      text-align: center;
+      min-width: 0;
+    }
+
+    .large-art-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: var(--text-bright);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 0 4px;
+    }
+
+    .large-art-artist {
+      font-size: 11px;
+      color: var(--accent-gold);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 0 4px;
+    }
+
+    /* Playback Control Bar */
+    .player-controls-panel {
+      padding: 8px 10px;
+      background-color: var(--bg-panel);
+      border-bottom: 1px solid var(--border-shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .player-buttons-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .playback-btn-group {
+      display: flex;
+      gap: 4px;
+    }
+
+    .playback-btn {
+      width: 30px;
+      height: 26px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    /* Seek / Progress Bar */
+    .player-seek-container {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .seek-bar-track-wrapper {
+      position: relative;
+      height: 14px;
+      background-color: #171c14;
+      border-top: 1px solid #11140e;
+      border-left: 1px solid #11140e;
+      border-bottom: 1px solid var(--border-light);
+      border-right: 1px solid var(--border-light);
+      overflow: hidden;
+      cursor: pointer;
+      touch-action: none;
+    }
+
+    .retro-seek-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: repeating-linear-gradient(
+        90deg,
+        var(--green-bar) 0px,
+        var(--green-bar) 7px,
+        var(--green-dark) 7px,
+        var(--green-dark) 9px
+      );
+      pointer-events: none;
+      transition: width 0.05s linear;
+    }
+
+    .retro-seek-input {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      margin: 0;
+      padding: 0;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .seek-time-row {
+      display: flex;
+      justify-content: space-between;
+      font-family: "Lucida Console", "Consolas", monospace;
+      font-size: 10px;
+      color: var(--accent-gold);
+    }
+
+    /* Track List */
+    .track-list-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background-color: #1f251c;
+    }
+
+    .track-item-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 5px 8px;
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-shadow);
+      cursor: pointer;
+      transition: background-color 0.1s;
+    }
+
+    .track-item-row:hover {
+      background-color: #313a2b;
+    }
+
+    .track-item-row.active {
+      background-color: #3b4733;
+      border-color: var(--accent-gold);
+    }
+
+    .track-item-art {
+      width: 48px;
+      height: 48px;
+      min-width: 48px;
+      background-color: #141812;
+      border: 1px solid var(--border-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .track-item-art img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .track-item-icon {
+      color: var(--accent-gold);
+      font-size: 22px;
+    }
+
+    .track-item-meta {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .track-item-title {
+      font-size: 11px;
+      font-weight: bold;
+      color: var(--text-bright);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.25;
+    }
+
+    .track-item-row.active .track-item-title {
+      color: var(--accent-gold);
+    }
+
+    .track-item-artist {
+      font-size: 10px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .track-item-badge {
+      font-size: 11px;
+      color: var(--green-bar);
+      font-weight: bold;
+    }
+
+    .track-list-empty {
+      padding: 30px 10px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+
+    /* Custom Retro Scrollbar */
+    ::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+      background-color: var(--bg-dark);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-color: var(--btn-bg);
+      border-top: 1px solid var(--border-highlight);
+      border-left: 1px solid var(--border-highlight);
+      border-bottom: 1px solid var(--border-shadow);
+      border-right: 1px solid var(--border-shadow);
+    }
+
+    ::-webkit-scrollbar-thumb:active {
+      background-color: var(--btn-active);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- MAIN PANE (Download Interface) -->
+    <div class="main-pane">
+
+      <!-- URL Input Groupbox -->
+      <div class="groupbox">
+        <div class="groupbox-title" id="lblUrlPrompt">Paste link:</div>
+        <div class="url-bar-row">
+          <input
+            type="text"
+            class="input-text"
+            id="inputUrl"
+            placeholder="Link to profile, track, playlist, album"
+            spellcheck="false"
+            autocomplete="off"
+          />
+          <button class="btn" id="btnPaste">Paste</button>
+          <button class="btn btn-primary" id="btnStartDownload">Download</button>
+          <button class="btn" id="btnStopDownload" disabled>Stop</button>
+        </div>
+      </div>
+
+      <!-- Active Download Card Groupbox -->
+      <div class="groupbox" style="flex: 1; display: flex; flex-direction: column;">
+        <div class="groupbox-title" id="lblCurrentStatus">Current download:</div>
+
+        <div class="download-card">
+          <div class="album-art-box" id="albumArtBox">
+            <span class="album-art-placeholder" id="albumArtIcon">?</span>
+            <img id="albumArtImg" src="" alt="Cover" style="display: none;" />
+          </div>
+
+          <div class="track-details-col">
+            <div>
+              <div class="track-title" id="currentTrackTitle">Waiting for link input...</div>
+              <div class="track-artist" id="currentTrackArtist">MAGNITOLA</div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div>
+              <div class="progress-track">
+                <div class="progress-fill" id="trackProgressFill"></div>
+                <div class="progress-text" id="trackProgressText">0%</div>
+              </div>
+              <div class="download-stats-row">
+                <span id="downloadSizeStats">0.00 / 0.00 MB</span>
+                <span id="downloadSpeedStats">0 KB/s</span>
+                <span id="downloadCounterStats">Track 0 of 0</span>
+              </div>
+            </div>
+
+            <!-- Quote Easter Egg -->
+            <div class="quote-box" id="quoteDisplay" style="display: none;">
+              💬 «God invented computers»
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Controls Row -->
+        <div class="bottom-controls-row">
+          <a
+            href="https://sync-line.pages.dev/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="syncline-widget"
+            title="Visit Syncline (https://sync-line.pages.dev/)"
+          >
+            <img src="synclinelogo.png" alt="Syncline Logo" class="syncline-logo-img" />
+            <span class="syncline-text">try syncline</span>
+            <span class="syncline-btn">Open ↗</span>
+          </a>
+
+          <div class="bottom-right-group">
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <div class="save-path-row" id="saveLocationInfo" title="Downloads">
+                Save folder: <strong id="saveFolderPath">Downloads</strong>
+              </div>
+              <button class="btn btn-sm" id="btnBrowseFolder" title="Browse...">Browse...</button>
+            </div>
+
+            <button class="single-lang-btn" id="btnToggleLang" title="Switch language / Сменить язык">
+              <svg class="flag-icon" id="flagSvg" viewBox="0 0 640 480">
+                <rect width="640" height="480" fill="#bf0a30"/>
+                <rect y="37" width="640" height="37" fill="#ffffff"/>
+                <rect y="111" width="640" height="37" fill="#ffffff"/>
+                <rect y="185" width="640" height="37" fill="#ffffff"/>
+                <rect y="259" width="640" height="37" fill="#ffffff"/>
+                <rect y="333" width="640" height="37" fill="#ffffff"/>
+                <rect y="407" width="640" height="37" fill="#ffffff"/>
+                <rect width="260" height="259" fill="#002868"/>
+              </svg>
+              <span id="langLabel">EN</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- PLAYER SIDEBAR (Right) -->
+    <div class="player-sidebar">
+
+      <!-- Large Album Artwork -->
+      <div class="large-art-container" id="playerLargeArtContainer" style="display: none;">
+        <div class="large-art-box">
+          <img id="playerLargeArtImg" src="" alt="Album Art" class="large-art-img" style="display: none;" />
+          <div id="playerLargeArtPlaceholder" class="large-art-placeholder">
+            <span class="large-art-placeholder-icon">♫</span>
+            <span class="large-art-placeholder-label">NO ARTWORK</span>
+          </div>
+        </div>
+        <div class="large-art-details">
+          <div class="large-art-title" id="playerLargeArtTitle">-</div>
+          <div class="large-art-artist" id="playerLargeArtArtist">-</div>
+        </div>
+      </div>
+
+      <!-- Playback Controls -->
+      <div class="player-controls-panel">
+        <div class="player-buttons-row">
+          <div class="playback-btn-group">
+            <button class="btn playback-btn" id="btnPlayerPrev" title="Previous track" disabled>|◀</button>
+            <button class="btn btn-primary playback-btn" id="btnPlayerPlay" title="Play" disabled>▶</button>
+            <button class="btn playback-btn" id="btnPlayerNext" title="Next track" disabled>▶|</button>
+          </div>
+        </div>
+
+        <div class="player-seek-container">
+          <div class="seek-bar-track-wrapper" id="playerSeekWrapper">
+            <div class="retro-seek-fill" id="playerSeekFill" style="width: 0%;"></div>
+            <input
+              type="range"
+              class="retro-seek-input"
+              id="playerSeekInput"
+              min="0"
+              max="1"
+              step="0.1"
+              value="0"
+              disabled
+              title="Drag or click to seek"
+            />
+          </div>
+          <div class="seek-time-row">
+            <span id="playerCurrentTime">0:00</span>
+            <span id="playerTotalTime">0:00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Track List -->
+      <div class="track-list-container" id="playerTrackList">
+        <div class="track-list-empty" id="playerTrackListEmpty">
+          <p>No MP3 files found in folder.</p>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    /* ==========================================================================
+       LOCALIZATION DICTIONARIES
+       ========================================================================== */
+    const LOCALES = {
+      en: {
+        urlPrompt: "Paste link:",
+        placeholder: "Link to profile, track, playlist, album",
+        currentStatus: "Current download:",
+        saveLocation: "Save folder: ",
+        saveFolderDefault: "Downloads",
+        paste: "Paste",
+        startDownload: "Download",
+        stopDownload: "Stop",
+        waitingInput: "Waiting for link input...",
+        ready: "Ready to download",
+        resolvingUrl: "Resolving link...",
+        downloading: "Downloading track...",
+        alreadyExists: "Already exists",
+        finished: "Download finished!",
+        failed: "Download failed",
+        emptyUrlError: "Error: No link provided.",
+        invalidUrlError: "Unsupported link. Please provide a profile, track, playlist, or album link.",
+        noTracksFound: "No tracks found for download.",
+        trackPrefix: "Track",
+        fromWord: "of",
+        browse: "Browse...",
+        noTracksInFolder: "No MP3 files found in folder.",
+        playing: "Playing",
+        paused: "Paused",
+        quotes: [
+          "God invented computers",
+          "Do you want to play a horror game?",
+          "If I support ******* if I respect ******* then what am I? ****** or something?",
+          "my mac my mac is rendering dota right now",
+          "I learned a .NET framework",
+          "wheel of death"
+        ]
+      },
+      ru: {
+        urlPrompt: "Вставьте ссылку:",
+        placeholder: "Ссылка на профиль, трек, плейлист, альбом",
+        currentStatus: "Текущая загрузка:",
+        saveLocation: "Папка сохранения: ",
+        saveFolderDefault: "Загрузки",
+        paste: "Вставить",
+        startDownload: "Скачать",
+        stopDownload: "Стоп",
+        waitingInput: "Ожидание ввода ссылки...",
+        ready: "Готов к загрузке",
+        resolvingUrl: "Определение ссылки...",
+        downloading: "Скачивание трека...",
+        alreadyExists: "Уже существует",
+        finished: "Загрузка завершена!",
+        failed: "Ошибка скачивания",
+        emptyUrlError: "Ошибка: ссылка не указана.",
+        invalidUrlError: "Неподдерживаемая ссылка. Укажите профиль, трек, плейлист или альбом.",
+        noTracksFound: "Треки для скачивания не найдены.",
+        trackPrefix: "Трек",
+        fromWord: "из",
+        browse: "Обзор...",
+        noTracksInFolder: "В папке не найдены MP3 треки.",
+        playing: "Играет",
+        paused: "Пауза",
+        quotes: [
+          "Компьютеры придумал господь Бог",
+          "Хочешь поиграть в хоррор?",
+          "Если я поддерживаю ******* если я уважаю ******* то я что? ****** чтоли?",
+          "мой мак мой мак сейчас монтирует доту",
+          "я выучил фреймворк по дотнету",
+          "колесо смерти"
+        ]
+      }
+    };
+
+    let currentLang = localStorage.getItem('magnitola_lang') || 'en';
+    let L = LOCALES[currentLang];
+
+    // Electron & Node.js environment detection
+    const isElectron = (typeof window !== 'undefined' && typeof window.process === 'object' && window.process.type === 'renderer') || (typeof require !== 'undefined');
+    let electronFs = null;
+    let electronPath = null;
+    let electronOs = null;
+    let electronIpc = null;
+
+    if (isElectron) {
+      try {
+        electronFs = require('fs');
+        electronPath = require('path');
+        electronOs = require('os');
+        const electron = require('electron');
+        electronIpc = electron.ipcRenderer;
+      } catch (e) {
+        console.warn('Electron modules loading warning:', e);
+      }
+    }
+
+    // Default download folder
+    let downloadFolder = localStorage.getItem('magnitola_save_folder') || '';
+    if (!downloadFolder && electronOs && electronPath) {
+      downloadFolder = electronPath.join(electronOs.homedir(), 'Downloads');
+    }
+
+    // SoundCloud API constants
+    const clientId = "so5r9Dsxv6jJRgHa5fGXfevkxr4VgNJf";
+    let isDownloading = false;
+    let cancelRequested = false;
+    let quoteInterval = null;
+    let currentQuoteIndex = 0;
+
+    // DOM Elements - Download
+    const inputUrl = document.getElementById('inputUrl');
+    const btnPaste = document.getElementById('btnPaste');
+    const btnStartDownload = document.getElementById('btnStartDownload');
+    const btnStopDownload = document.getElementById('btnStopDownload');
+    const albumArtBox = document.getElementById('albumArtBox');
+    const albumArtImg = document.getElementById('albumArtImg');
+    const albumArtIcon = document.getElementById('albumArtIcon');
+    const currentTrackTitle = document.getElementById('currentTrackTitle');
+    const currentTrackArtist = document.getElementById('currentTrackArtist');
+    const trackProgressFill = document.getElementById('trackProgressFill');
+    const trackProgressText = document.getElementById('trackProgressText');
+    const downloadSizeStats = document.getElementById('downloadSizeStats');
+    const downloadSpeedStats = document.getElementById('downloadSpeedStats');
+    const downloadCounterStats = document.getElementById('downloadCounterStats');
+    const quoteDisplay = document.getElementById('quoteDisplay');
+    const saveLocationInfo = document.getElementById('saveLocationInfo');
+    const saveFolderPath = document.getElementById('saveFolderPath');
+    const btnBrowseFolder = document.getElementById('btnBrowseFolder');
+    const btnToggleLang = document.getElementById('btnToggleLang');
+    const langLabel = document.getElementById('langLabel');
+    const flagSvg = document.getElementById('flagSvg');
+    const lblUrlPrompt = document.getElementById('lblUrlPrompt');
+    const lblCurrentStatus = document.getElementById('lblCurrentStatus');
+
+    // DOM Elements - Player
+    const playerLargeArtContainer = document.getElementById('playerLargeArtContainer');
+    const playerLargeArtImg = document.getElementById('playerLargeArtImg');
+    const playerLargeArtPlaceholder = document.getElementById('playerLargeArtPlaceholder');
+    const playerLargeArtTitle = document.getElementById('playerLargeArtTitle');
+    const playerLargeArtArtist = document.getElementById('playerLargeArtArtist');
+    const btnPlayerPrev = document.getElementById('btnPlayerPrev');
+    const btnPlayerPlay = document.getElementById('btnPlayerPlay');
+    const btnPlayerNext = document.getElementById('btnPlayerNext');
+    const playerSeekWrapper = document.getElementById('playerSeekWrapper');
+    const playerSeekFill = document.getElementById('playerSeekFill');
+    const playerSeekInput = document.getElementById('playerSeekInput');
+    const playerCurrentTime = document.getElementById('playerCurrentTime');
+    const playerTotalTime = document.getElementById('playerTotalTime');
+    const playerTrackList = document.getElementById('playerTrackList');
+    const playerTrackListEmpty = document.getElementById('playerTrackListEmpty');
+
+    /* ==========================================================================
+       LOCALIZATION
+       ========================================================================== */
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('magnitola_lang', lang);
+      L = LOCALES[lang];
+
+      if (lang === 'ru') {
+        langLabel.textContent = "RU";
+        flagSvg.innerHTML = `
+          <rect width="640" height="160" fill="#ffffff"/>
+          <rect y="160" width="640" height="160" fill="#0039a6"/>
+          <rect y="320" width="640" height="160" fill="#d52b1e"/>
+        `;
+      } else {
+        langLabel.textContent = "EN";
+        flagSvg.innerHTML = `
+          <rect width="640" height="480" fill="#bf0a30"/>
+          <rect y="37" width="640" height="37" fill="#ffffff"/>
+          <rect y="111" width="640" height="37" fill="#ffffff"/>
+          <rect y="185" width="640" height="37" fill="#ffffff"/>
+          <rect y="259" width="640" height="37" fill="#ffffff"/>
+          <rect y="333" width="640" height="37" fill="#ffffff"/>
+          <rect y="407" width="640" height="37" fill="#ffffff"/>
+          <rect width="260" height="259" fill="#002868"/>
+        `;
+      }
+
+      lblUrlPrompt.textContent = L.urlPrompt;
+      inputUrl.placeholder = L.placeholder;
+      lblCurrentStatus.textContent = L.currentStatus;
+      btnPaste.textContent = L.paste;
+      btnStartDownload.textContent = L.startDownload;
+      btnStopDownload.textContent = L.stopDownload;
+      btnBrowseFolder.textContent = L.browse;
+
+      updateSavePathDisplay();
+
+      if (!isDownloading) {
+        currentTrackTitle.textContent = L.waitingInput;
+      }
+
+      if (playerTrackListEmpty) {
+        playerTrackListEmpty.innerHTML = `<p>${L.noTracksInFolder}</p>`;
+      }
+
+      if (quoteDisplay.style.display !== 'none') {
+        quoteDisplay.textContent = `💬 «${L.quotes[currentQuoteIndex]}»`;
+      }
+    }
+
+    btnToggleLang.addEventListener('click', () => {
+      setLanguage(currentLang === 'ru' ? 'en' : 'ru');
+    });
+
+    function updateSavePathDisplay() {
+      const display = downloadFolder || L.saveFolderDefault;
+      saveFolderPath.textContent = display;
+      saveLocationInfo.title = display;
+    }
+
+    btnBrowseFolder.addEventListener('click', async () => {
+      if (electronIpc) {
+        try {
+          const selected = await electronIpc.invoke('select-folder');
+          if (selected) {
+            downloadFolder = selected;
+            localStorage.setItem('magnitola_save_folder', selected);
+            updateSavePathDisplay();
+            scanAndLoadLibrary(selected);
+          }
+        } catch (err) {
+          console.error('Failed to open folder picker dialog:', err);
+        }
+      } else {
+        alert("Folder picking is managed automatically in desktop environment.");
+      }
+    });
+
+    /* ==========================================================================
+       QUOTE EASTER EGG (Cycles every 2s when link is entered or downloading)
+       ========================================================================== */
+    function checkQuoteVisibility() {
+      if (inputUrl.value.trim().length > 0 || isDownloading) {
+        quoteDisplay.style.display = 'block';
+        quoteDisplay.textContent = `💬 «${L.quotes[currentQuoteIndex]}»`;
+      } else {
+        quoteDisplay.style.display = 'none';
+      }
+    }
+
+    function startQuoteRotation() {
+      stopQuoteRotation();
+      quoteDisplay.style.display = 'block';
+      quoteDisplay.textContent = `💬 «${L.quotes[currentQuoteIndex]}»`;
+      quoteInterval = setInterval(() => {
+        currentQuoteIndex = (currentQuoteIndex + 1) % L.quotes.length;
+        quoteDisplay.textContent = `💬 «${L.quotes[currentQuoteIndex]}»`;
+      }, 2000);
+    }
+
+    function stopQuoteRotation() {
+      if (quoteInterval) {
+        clearInterval(quoteInterval);
+        quoteInterval = null;
+      }
+    }
+
+    /* ==========================================================================
+       ID3v2.3 PURE JAVASCRIPT ENCODER & TAG EXTRACTOR
+       ========================================================================== */
+    function createId3v23Tag(title, artist, artworkBuffer) {
+      function makeTextFrame(frameId, text) {
+        if (!text) return null;
+        const bytes = [0x01, 0xFF, 0xFE]; // UTF-16 with BOM
+        for (let i = 0; i < text.length; i++) {
+          const code = text.charCodeAt(i);
+          bytes.push(code & 0xFF, (code >> 8) & 0xFF);
+        }
+        const body = new Uint8Array(bytes);
+        const frame = new Uint8Array(10 + body.length);
+        for (let i = 0; i < 4; i++) frame[i] = frameId.charCodeAt(i);
+        const sz = body.length;
+        frame[4] = (sz >> 24) & 0xFF;
+        frame[5] = (sz >> 16) & 0xFF;
+        frame[6] = (sz >> 8) & 0xFF;
+        frame[7] = sz & 0xFF;
+        frame[8] = 0x00;
+        frame[9] = 0x00;
+        frame.set(body, 10);
+        return frame;
+      }
+
+      function makeApicFrame(imgBytes) {
+        if (!imgBytes || imgBytes.length === 0) return null;
+        const mime = "image/jpeg\0";
+        const mimeBytes = [];
+        for (let i = 0; i < mime.length; i++) mimeBytes.push(mime.charCodeAt(i));
+
+        const bodyLen = 1 + mimeBytes.length + 1 + 1 + imgBytes.length;
+        const body = new Uint8Array(bodyLen);
+        let p = 0;
+        body[p++] = 0x00; // ISO-8859-1
+        for (let b of mimeBytes) body[p++] = b;
+        body[p++] = 0x03; // Front Cover
+        body[p++] = 0x00;
+        body.set(imgBytes, p);
+
+        const frame = new Uint8Array(10 + bodyLen);
+        for (let i = 0; i < 4; i++) frame[i] = "APIC".charCodeAt(i);
+        frame[4] = (bodyLen >> 24) & 0xFF;
+        frame[5] = (bodyLen >> 16) & 0xFF;
+        frame[6] = (bodyLen >> 8) & 0xFF;
+        frame[7] = bodyLen & 0xFF;
+        frame[8] = 0x00;
+        frame[9] = 0x00;
+        frame.set(body, 10);
+        return frame;
+      }
+
+      const frames = [];
+      const tit2 = makeTextFrame("TIT2", title);
+      const tpe1 = makeTextFrame("TPE1", artist);
+      if (tit2) frames.push(tit2);
+      if (tpe1) frames.push(tpe1);
+      if (artworkBuffer) {
+        const apic = makeApicFrame(artworkBuffer);
+        if (apic) frames.push(apic);
+      }
+
+      const totalFramesSize = frames.reduce((acc, f) => acc + f.length, 0);
+      const header = new Uint8Array(10);
+      header[0] = 0x49; header[1] = 0x44; header[2] = 0x33; // 'ID3'
+      header[3] = 0x03; header[4] = 0x00; // v2.3
+      header[5] = 0x00;
+      header[6] = (totalFramesSize >> 21) & 0x7F;
+      header[7] = (totalFramesSize >> 14) & 0x7F;
+      header[8] = (totalFramesSize >> 7) & 0x7F;
+      header[9] = totalFramesSize & 0x7F;
+
+      const tag = new Uint8Array(10 + totalFramesSize);
+      tag.set(header, 0);
+      let offset = 10;
+      for (const f of frames) {
+        tag.set(f, offset);
+        offset += f.length;
+      }
+      return tag;
+    }
+
+    function sanitizeFileName(name) {
+      return (name || 'Track').replace(/[<>:"/\\|?*]+/g, '_').trim().replace(/\.+$/, '');
+    }
+
+    function formatTime(seconds) {
+      if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    /* ==========================================================================
+       SOUNDCLOUD RESOLVER & DOWNLOAD FLOW
+       ========================================================================== */
+    async function resolveSoundCloudUrl(url) {
+      let cleanUrl = url.trim();
+
+      // Mobile shortlink expansion
+      if (cleanUrl.includes('on.soundcloud.com')) {
+        try {
+          const resp = await fetch(cleanUrl, { method: 'GET', redirect: 'follow' });
+          if (resp.url && resp.url !== cleanUrl) {
+            cleanUrl = resp.url;
+          }
+        } catch (e) {
+          console.warn('Could not expand shortlink:', e);
+        }
+      }
+
+      // Strip query parameters and trailing /likes so resolve API gives the base user/playlist entity
+      let resolveTarget = cleanUrl.replace(/\/likes\/?(\?.*)?$/i, '').replace(/\/+$/, '');
+      const resolveApi = `https://api-v2.soundcloud.com/resolve?url=${encodeURIComponent(resolveTarget)}&client_id=${clientId}`;
+
+      const resp = await fetch(resolveApi);
+      if (!resp.ok) {
+        throw new Error(`SoundCloud resolve failed with status ${resp.status}`);
+      }
+
+      const data = await resp.json();
+      const kind = data.kind;
+      let trackQueue = [];
+
+      if (kind === 'track') {
+        trackQueue = [data];
+      } else if (kind === 'playlist' || kind === 'system-playlist') {
+        const tracksElement = data.tracks || [];
+        const trackIdsToFetch = [];
+
+        for (const item of tracksElement) {
+          if (item.media && item.media.transcodings) {
+            trackQueue.push(item);
+          } else if (item.id) {
+            trackIdsToFetch.push(item.id);
+          }
+        }
+
+        if (trackIdsToFetch.length > 0) {
+          for (let i = 0; i < trackIdsToFetch.length; i += 50) {
+            if (cancelRequested) break;
+            const batch = trackIdsToFetch.slice(i, i + 50);
+            const batchUrl = `https://api-v2.soundcloud.com/tracks?ids=${batch.join('%2C')}&client_id=${clientId}`;
+            const bResp = await fetch(batchUrl);
+            if (bResp.ok) {
+              const bTracks = await bResp.json();
+              trackQueue.push(...bTracks);
+            }
+          }
+        }
+      } else if (kind === 'user') {
+        /* CRITICAL BUG FIX: ALWAYS FETCH USER'S LIKES AS IN ORIGINAL JAVASCRIPT LOGIC */
+        const userId = data.id;
+        let likesUrl = `https://api-v2.soundcloud.com/users/${userId}/likes?client_id=${clientId}&limit=50`;
+
+        while (likesUrl && !cancelRequested) {
+          const lResp = await fetch(likesUrl);
+          if (!lResp.ok) break;
+          const lData = await lResp.json();
+
+          for (const item of (lData.collection || [])) {
+            if (item.track && item.track.media && item.track.media.transcodings) {
+              trackQueue.push(item.track);
+            } else if (item.playlist && item.playlist.tracks) {
+              for (const ptr of item.playlist.tracks) {
+                if (ptr && ptr.media && ptr.media.transcodings) {
+                  trackQueue.push(ptr);
+                }
+              }
+            } else if (item.media && item.media.transcodings) {
+              trackQueue.push(item);
+            }
+          }
+
+          if (lData.next_href) {
+            likesUrl = lData.next_href;
+            if (!likesUrl.includes('client_id=')) {
+              likesUrl += `&client_id=${clientId}`;
+            }
+          } else {
+            likesUrl = null;
+          }
+        }
+      } else {
+        throw new Error(L.invalidUrlError);
+      }
+
+      return trackQueue;
+    }
+
+    async function downloadTrack(track, index, total) {
+      const title = track.title || 'Untitled';
+      const artist = track.user ? (track.user.username || 'Unknown Artist') : 'MAGNITOLA';
+      const artwork = track.artwork_url || (track.user ? track.user.avatar_url : null);
+
+      currentTrackTitle.textContent = title;
+      currentTrackArtist.textContent = artist;
+
+      if (artwork) {
+        const hiResArtwork = artwork.replace('-large', '-t500x500');
+        albumArtImg.src = hiResArtwork;
+        albumArtImg.style.display = 'block';
+        albumArtIcon.style.display = 'none';
+      } else {
+        albumArtImg.style.display = 'none';
+        albumArtIcon.style.display = 'block';
+      }
+
+      try {
+        const transcodings = track.media && track.media.transcodings ? track.media.transcodings : [];
+        if (transcodings.length === 0) return false;
+
+        // Prioritize progressive MP3 streams
+        const sorted = [...transcodings].sort((a, b) => {
+          let scoreA = 0, scoreB = 0;
+          if (a.format?.protocol === 'progressive') scoreA += 100;
+          if (b.format?.protocol === 'progressive') scoreB += 100;
+          if (a.format?.mime_type === 'audio/mpeg') scoreA += 200;
+          if (b.format?.mime_type === 'audio/mpeg') scoreB += 200;
+          return scoreB - scoreA;
+        });
+
+        let audioBuffer = null;
+
+        for (const selected of sorted) {
+          if (cancelRequested) return false;
+
+          let streamInfoUrl = `${selected.url}?client_id=${clientId}`;
+          if (track.track_authorization) {
+            streamInfoUrl += `&track_authorization=${encodeURIComponent(track.track_authorization)}`;
+          }
+
+          const streamResp = await fetch(streamInfoUrl);
+          if (!streamResp.ok) continue;
+          const streamJson = await streamResp.json();
+          const audioCdnUrl = streamJson.url;
+          if (!audioCdnUrl) continue;
+
+          // Progressive Stream Download
+          if (selected.format?.protocol === 'progressive' || !audioCdnUrl.includes('.m3u8')) {
+            const audioResp = await fetch(audioCdnUrl);
+            if (!audioResp.ok) continue;
+
+            const contentLength = +audioResp.headers.get('Content-Length') || 0;
+            const reader = audioResp.body.getReader();
+            let receivedBytes = 0;
+            const chunks = [];
+            const startTime = Date.now();
+
+            while (true) {
+              if (cancelRequested) {
+                await reader.cancel();
+                return false;
+              }
+
+              const { done, value } = await reader.read();
+              if (done) break;
+
+              chunks.push(value);
+              receivedBytes += value.length;
+
+              const percent = contentLength > 0 ? (receivedBytes / contentLength * 100) : 0;
+              trackProgressFill.style.width = `${Math.min(100, percent)}%`;
+              trackProgressText.textContent = `${percent.toFixed(1)}%`;
+
+              const curMb = (receivedBytes / 1024 / 1024).toFixed(2);
+              const totalMb = contentLength > 0 ? (contentLength / 1024 / 1024).toFixed(2) : '?';
+              downloadSizeStats.textContent = `${curMb} / ${totalMb} MB`;
+
+              const elapsedSec = (Date.now() - startTime) / 1000;
+              if (elapsedSec > 0) {
+                const kbSec = ((receivedBytes / 1024) / elapsedSec).toFixed(0);
+                downloadSpeedStats.textContent = `${kbSec} KB/s`;
+              }
+            }
+
+            audioBuffer = new Uint8Array(receivedBytes);
+            let offset = 0;
+            for (const chunk of chunks) {
+              audioBuffer.set(chunk, offset);
+              offset += chunk.length;
+            }
+            break;
+          } else {
+            // HLS Stream Download (.m3u8)
+            const hlsResp = await fetch(audioCdnUrl);
+            if (!hlsResp.ok) continue;
+            let m3u8Text = await hlsResp.text();
+
+            let targetPlaylistUrl = audioCdnUrl;
+            if (m3u8Text.includes('#EXT-X-STREAM-INF')) {
+              const lines = m3u8Text.split('\n');
+              for (let li = 0; li < lines.length; li++) {
+                if (lines[li].startsWith('#EXT-X-STREAM-INF')) {
+                  const nextLine = lines[li + 1]?.trim();
+                  if (nextLine && !nextLine.startsWith('#')) {
+                    targetPlaylistUrl = new URL(nextLine, audioCdnUrl).href;
+                    break;
+                  }
+                }
+              }
+              const varResp = await fetch(targetPlaylistUrl);
+              if (varResp.ok) m3u8Text = await varResp.text();
+            }
+
+            const segmentUrls = [];
+            for (const line of m3u8Text.split('\n')) {
+              const tr = line.trim();
+              if (tr && !tr.startsWith('#')) {
+                segmentUrls.push(new URL(tr, targetPlaylistUrl).href);
+              }
+            }
+
+            if (segmentUrls.length === 0) continue;
+
+            const chunks = [];
+            let receivedBytes = 0;
+            const startTime = Date.now();
+
+            for (let s = 0; s < segmentUrls.length; s++) {
+              if (cancelRequested) return false;
+              const segResp = await fetch(segmentUrls[s]);
+              if (!segResp.ok) continue;
+              const segBuf = new Uint8Array(await segResp.arrayBuffer());
+              chunks.push(segBuf);
+              receivedBytes += segBuf.length;
+
+              const percent = ((s + 1) / segmentUrls.length) * 100;
+              trackProgressFill.style.width = `${Math.min(100, percent)}%`;
+              trackProgressText.textContent = `${percent.toFixed(1)}%`;
+
+              const curMb = (receivedBytes / 1024 / 1024).toFixed(2);
+              downloadSizeStats.textContent = `${curMb} MB`;
+
+              const elapsedSec = (Date.now() - startTime) / 1000;
+              if (elapsedSec > 0) {
+                const kbSec = ((receivedBytes / 1024) / elapsedSec).toFixed(0);
+                downloadSpeedStats.textContent = `${kbSec} KB/s`;
+              }
+            }
+
+            audioBuffer = new Uint8Array(receivedBytes);
+            let offset = 0;
+            for (const chunk of chunks) {
+              audioBuffer.set(chunk, offset);
+              offset += chunk.length;
+            }
+            break;
+          }
+        }
+
+        if (!audioBuffer) return false;
+
+        // Fetch Cover Art (500x500)
+        let artworkBuffer = null;
+        let artworkBase64 = null;
+        if (artwork) {
+          try {
+            const hiResCover = artwork.replace('-large', '-t500x500');
+            const coverResp = await fetch(hiResCover);
+            if (coverResp.ok) {
+              const cBuf = await coverResp.arrayBuffer();
+              artworkBuffer = new Uint8Array(cBuf);
+              let binary = '';
+              for (let i = 0; i < artworkBuffer.byteLength; i++) {
+                binary += String.fromCharCode(artworkBuffer[i]);
+              }
+              artworkBase64 = `data:image/jpeg;base64,${btoa(binary)}`;
+            }
+          } catch (e) {}
+        }
+
+        // Embed ID3v2.3 Tags
+        const id3Tag = createId3v23Tag(title, artist, artworkBuffer);
+        const combined = new Uint8Array(id3Tag.length + audioBuffer.length);
+        combined.set(id3Tag, 0);
+        combined.set(audioBuffer, id3Tag.length);
+
+        const fileName = `${sanitizeFileName(artist)} - ${sanitizeFileName(title)}.mp3`;
+
+        // Direct Save to Disk in Electron
+        if (electronFs && electronPath) {
+          const targetDir = downloadFolder || electronPath.join(electronOs.homedir(), 'Downloads');
+          if (!electronFs.existsSync(targetDir)) {
+            electronFs.mkdirSync(targetDir, { recursive: true });
+          }
+          const fullFilePath = electronPath.join(targetDir, fileName);
+          electronFs.writeFileSync(fullFilePath, Buffer.from(combined));
+
+          // Immediately append to player tracklist
+          addTrackToPlayer({
+            id: fullFilePath,
+            filePath: fullFilePath,
+            fileName,
+            title,
+            artist,
+            artworkDataUrl: artworkBase64,
+            duration: Math.round(track.duration ? track.duration / 1000 : 0)
+          });
+        } else {
+          // Browser fallback
+          const blob = new Blob([combined], { type: 'audio/mpeg' });
+          const bUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = bUrl;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(bUrl);
+          }, 2000);
+        }
+
+        trackProgressFill.style.width = '100%';
+        trackProgressText.textContent = '100%';
+        return true;
+
+      } catch (err) {
+        console.error('Download error for track:', err);
+        return false;
+      }
+    }
+
+    async function startDownloadFlow() {
+      const rawUrl = inputUrl.value.trim();
+      if (!rawUrl) {
+        alert(L.emptyUrlError);
+        return;
+      }
+
+      isDownloading = true;
+      cancelRequested = false;
+      btnStartDownload.disabled = true;
+      btnStopDownload.disabled = false;
+      startQuoteRotation();
+
+      currentTrackTitle.textContent = L.resolvingUrl;
+      currentTrackArtist.textContent = "MAGNITOLA";
+
+      try {
+        const queue = await resolveSoundCloudUrl(rawUrl);
+
+        if (!queue || queue.length === 0) {
+          alert(L.noTracksFound);
+          return;
+        }
+
+        const total = queue.length;
+        let completed = 0;
+
+        for (let i = 0; i < total; i++) {
+          if (cancelRequested) break;
+          downloadCounterStats.textContent = `${L.trackPrefix} ${i + 1} ${L.fromWord} ${total}`;
+          const ok = await downloadTrack(queue[i], i + 1, total);
+          if (ok) completed++;
+        }
+
+        currentTrackTitle.textContent = `${L.finished} (${completed}/${total})`;
+      } catch (err) {
+        console.error(err);
+        alert(err.message || L.failed);
+      } finally {
+        isDownloading = false;
+        btnStartDownload.disabled = false;
+        btnStopDownload.disabled = true;
+        stopQuoteRotation();
+        checkQuoteVisibility();
+      }
+    }
+
+    /* ==========================================================================
+       RETRO AUDIO PLAYER ENGINE
+       ========================================================================== */
+    const audio = new Audio();
+    audio.volume = 1.0;
+
+    let libraryTracks = [];
+    let currentPlayingTrack = null;
+    let isPlaying = false;
+    let isDraggingSeek = false;
+
+    function getMediaUrl(filePath) {
+      return `media://local/${encodeURIComponent(filePath)}`;
+    }
+
+    function addTrackToPlayer(track) {
+      const existing = libraryTracks.find(t => t.filePath.toLowerCase() === track.filePath.toLowerCase());
+      if (!existing) {
+        libraryTracks.unshift(track);
+        renderTrackList();
+        updatePlayerButtonsState();
+      }
+    }
+
+    function scanAndLoadLibrary(folder) {
+      if (!electronFs || !electronPath || !folder) return;
+      if (!electronFs.existsSync(folder)) return;
+
+      try {
+        const files = electronFs.readdirSync(folder);
+        const supported = ['.mp3', '.wav', '.ogg', '.flac', '.m4a', '.aac'];
+        const mediaFiles = files.filter(f => {
+          const ext = electronPath.extname(f).toLowerCase();
+          return supported.includes(ext);
+        });
+
+        const list = [];
+        for (const fileName of mediaFiles) {
+          const fullPath = electronPath.join(folder, fileName);
+          const baseName = electronPath.parse(fileName).name;
+          let artist = 'MAGNITOLA';
+          let title = baseName;
+
+          if (baseName.includes(' - ')) {
+            const parts = baseName.split(' - ');
+            artist = parts[0].trim();
+            title = parts.slice(1).join(' - ').trim();
+          }
+
+          // Read embedded APIC artwork if available (simple ID3 parser)
+          let artworkDataUrl = null;
+          try {
+            const fd = electronFs.openSync(fullPath, 'r');
+            const headerBuf = Buffer.alloc(128 * 1024);
+            const bytesRead = electronFs.readSync(fd, headerBuf, 0, headerBuf.length, 0);
+            electronFs.closeSync(fd);
+
+            if (bytesRead > 10 && headerBuf[0] === 0x49 && headerBuf[1] === 0x44 && headerBuf[2] === 0x33) {
+              const apicIdx = headerBuf.indexOf('APIC');
+              if (apicIdx !== -1) {
+                const frameSize = headerBuf.readUInt32BE(apicIdx + 4);
+                const frameData = headerBuf.slice(apicIdx + 10, apicIdx + 10 + frameSize);
+                const jpegStart = frameData.indexOf(Buffer.from([0xFF, 0xD8, 0xFF]));
+                const pngStart = frameData.indexOf(Buffer.from([0x89, 0x50, 0x4E, 0x47]));
+
+                let imgStart = jpegStart !== -1 ? jpegStart : pngStart;
+                let mime = jpegStart !== -1 ? 'image/jpeg' : 'image/png';
+
+                if (imgStart !== -1) {
+                  const imgBuf = frameData.slice(imgStart);
+                  artworkDataUrl = `data:${mime};base64,${imgBuf.toString('base64')}`;
+                }
+              }
+            }
+          } catch (e) {}
+
+          list.push({
+            id: fullPath,
+            filePath: fullPath,
+            fileName,
+            title,
+            artist,
+            artworkDataUrl,
+            duration: 0
+          });
+        }
+
+        libraryTracks = list;
+        renderTrackList();
+        updatePlayerButtonsState();
+      } catch (err) {
+        console.error('Scan library error:', err);
+      }
+    }
+
+    function renderTrackList() {
+      if (libraryTracks.length === 0) {
+        playerTrackList.innerHTML = `<div class="track-list-empty" id="playerTrackListEmpty"><p>${L.noTracksInFolder}</p></div>`;
+        return;
+      }
+
+      let html = '';
+      for (let i = 0; i < libraryTracks.length; i++) {
+        const tr = libraryTracks[i];
+        const isActive = currentPlayingTrack && currentPlayingTrack.filePath === tr.filePath;
+        const badge = isActive ? (isPlaying ? '▶' : '❚❚') : '';
+
+        html += `
+          <div class="track-item-row ${isActive ? 'active' : ''}" data-index="${i}">
+            <div class="track-item-art">
+              ${tr.artworkDataUrl ? `<img src="${tr.artworkDataUrl}" alt="Cover" />` : `<span class="track-item-icon">♫</span>`}
+            </div>
+            <div class="track-item-meta">
+              <div class="track-item-title">${tr.title}</div>
+              <div class="track-item-artist">${tr.artist}</div>
+            </div>
+            ${isActive ? `<span class="track-item-badge">${badge}</span>` : ''}
+          </div>
+        `;
+      }
+      playerTrackList.innerHTML = html;
+
+      const rows = playerTrackList.querySelectorAll('.track-item-row');
+      rows.forEach(r => {
+        r.addEventListener('click', () => {
+          const idx = parseInt(r.getAttribute('data-index'), 10);
+          playTrack(libraryTracks[idx]);
+        });
+      });
+    }
+
+    function updatePlayerButtonsState() {
+      const hasTracks = libraryTracks.length > 0;
+      btnPlayerPrev.disabled = !hasTracks;
+      btnPlayerPlay.disabled = !hasTracks;
+      btnPlayerNext.disabled = !hasTracks;
+    }
+
+    function playTrack(track) {
+      if (!track) return;
+      currentPlayingTrack = track;
+
+      playerLargeArtContainer.style.display = 'flex';
+      playerLargeArtTitle.textContent = track.title;
+      playerLargeArtArtist.textContent = track.artist;
+
+      if (track.artworkDataUrl) {
+        playerLargeArtImg.src = track.artworkDataUrl;
+        playerLargeArtImg.style.display = 'block';
+        playerLargeArtPlaceholder.style.display = 'none';
+      } else {
+        playerLargeArtImg.style.display = 'none';
+        playerLargeArtPlaceholder.style.display = 'flex';
+      }
+
+      audio.src = getMediaUrl(track.filePath);
+      audio.play().catch(e => console.warn('Playback start warning:', e));
+      isPlaying = true;
+      btnPlayerPlay.textContent = '❚❚';
+      btnPlayerPlay.title = L.paused;
+      playerSeekInput.disabled = false;
+      playerSeekFill.style.width = '0%';
+      playerCurrentTime.textContent = '0:00';
+      playerTotalTime.textContent = (track.duration && track.duration > 0) ? formatTime(track.duration) : '0:00';
+      if (track.duration && track.duration > 0) {
+        playerSeekInput.max = track.duration;
+      }
+      renderTrackList();
+    }
+
+    function togglePlay() {
+      if (!currentPlayingTrack && libraryTracks.length > 0) {
+        playTrack(libraryTracks[0]);
+        return;
+      }
+      if (!currentPlayingTrack) return;
+
+      if (isPlaying) {
+        audio.pause();
+        isPlaying = false;
+        btnPlayerPlay.textContent = '▶';
+        btnPlayerPlay.title = L.playing;
+      } else {
+        audio.play().catch(e => console.warn(e));
+        isPlaying = true;
+        btnPlayerPlay.textContent = '❚❚';
+        btnPlayerPlay.title = L.paused;
+      }
+      renderTrackList();
+    }
+
+    function prevTrack() {
+      if (libraryTracks.length === 0) return;
+      if (!currentPlayingTrack) {
+        playTrack(libraryTracks[0]);
+        return;
+      }
+      const idx = libraryTracks.findIndex(t => t.filePath === currentPlayingTrack.filePath);
+      const nextIdx = idx > 0 ? idx - 1 : libraryTracks.length - 1;
+      playTrack(libraryTracks[nextIdx]);
+    }
+
+    function nextTrack() {
+      if (libraryTracks.length === 0) return;
+      if (!currentPlayingTrack) {
+        playTrack(libraryTracks[0]);
+        return;
+      }
+      const idx = libraryTracks.findIndex(t => t.filePath === currentPlayingTrack.filePath);
+      const nextIdx = (idx + 1) % libraryTracks.length;
+      playTrack(libraryTracks[nextIdx]);
+    }
+
+    btnPlayerPlay.addEventListener('click', togglePlay);
+    btnPlayerPrev.addEventListener('click', prevTrack);
+    btnPlayerNext.addEventListener('click', nextTrack);
+
+    audio.addEventListener('play', () => {
+      isPlaying = true;
+      btnPlayerPlay.textContent = '❚❚';
+      renderTrackList();
+    });
+
+    audio.addEventListener('pause', () => {
+      isPlaying = false;
+      btnPlayerPlay.textContent = '▶';
+      renderTrackList();
+    });
+
+    audio.addEventListener('ended', () => {
+      nextTrack();
+    });
+
+    function updateDurationDisplay() {
+      const dur = audio.duration;
+      if (dur && Number.isFinite(dur) && dur > 0) {
+        playerSeekInput.max = dur;
+        playerTotalTime.textContent = formatTime(dur);
+      }
+    }
+
+    audio.addEventListener('loadedmetadata', updateDurationDisplay);
+    audio.addEventListener('durationchange', updateDurationDisplay);
+    audio.addEventListener('canplay', updateDurationDisplay);
+
+    audio.addEventListener('timeupdate', () => {
+      if (!isDraggingSeek) {
+        const cur = audio.currentTime;
+        const dur = audio.duration;
+        if (dur && Number.isFinite(dur) && dur > 0) {
+          playerSeekInput.max = dur;
+          playerSeekInput.value = cur;
+          const pct = Math.min(100, Math.max(0, (cur / dur) * 100));
+          playerSeekFill.style.width = `${pct}%`;
+          playerCurrentTime.textContent = formatTime(cur);
+          playerTotalTime.textContent = formatTime(dur);
+        } else {
+          playerCurrentTime.textContent = formatTime(cur);
+        }
+      }
+    });
+
+    let isPointerDownOnSeek = false;
+
+    function getSeekRatioFromEvent(e) {
+      const rect = playerSeekWrapper.getBoundingClientRect();
+      if (rect.width <= 0) return 0;
+      return Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    }
+
+    function previewSeekPosition(ratio) {
+      const dur = audio.duration;
+      const validDur = (dur && Number.isFinite(dur) && dur > 0) ? dur : (currentPlayingTrack?.duration || 0);
+      const clampedRatio = Math.max(0, Math.min(1, ratio));
+      playerSeekFill.style.width = `${clampedRatio * 100}%`;
+      if (validDur > 0) {
+        const targetSec = clampedRatio * validDur;
+        playerSeekInput.value = targetSec;
+        playerCurrentTime.textContent = formatTime(targetSec);
+      }
+    }
+
+    function applySeekPosition(ratio) {
+      const dur = audio.duration;
+      const validDur = (dur && Number.isFinite(dur) && dur > 0) ? dur : (currentPlayingTrack?.duration || 0);
+      if (validDur > 0) {
+        const clampedRatio = Math.max(0, Math.min(1, ratio));
+        const targetSec = clampedRatio * validDur;
+        playerSeekFill.style.width = `${clampedRatio * 100}%`;
+        playerSeekInput.value = targetSec;
+        playerCurrentTime.textContent = formatTime(targetSec);
+        try {
+          audio.currentTime = targetSec;
+        } catch (err) {
+          console.warn('Seek error:', err);
+        }
+      }
+    }
+
+    playerSeekWrapper.addEventListener('pointerdown', (e) => {
+      if (playerSeekInput.disabled || !currentPlayingTrack) return;
+      isDraggingSeek = true;
+      isPointerDownOnSeek = true;
+      try {
+        playerSeekWrapper.setPointerCapture(e.pointerId);
+      } catch (err) {}
+      const ratio = getSeekRatioFromEvent(e);
+      previewSeekPosition(ratio);
+    });
+
+    playerSeekWrapper.addEventListener('pointermove', (e) => {
+      if (!isPointerDownOnSeek) return;
+      const ratio = getSeekRatioFromEvent(e);
+      previewSeekPosition(ratio);
+    });
+
+    function finishSeekPointer(e) {
+      if (!isPointerDownOnSeek) return;
+      isPointerDownOnSeek = false;
+      isDraggingSeek = false;
+      const ratio = getSeekRatioFromEvent(e);
+      applySeekPosition(ratio);
+    }
+
+    playerSeekWrapper.addEventListener('pointerup', finishSeekPointer);
+    playerSeekWrapper.addEventListener('pointercancel', finishSeekPointer);
+
+    playerSeekInput.addEventListener('input', (e) => {
+      isDraggingSeek = true;
+      const val = parseFloat(e.target.value);
+      const dur = audio.duration || 1;
+      const pct = (val / dur) * 100;
+      playerSeekFill.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+      playerCurrentTime.textContent = formatTime(val);
+    });
+
+    playerSeekInput.addEventListener('change', (e) => {
+      isDraggingSeek = false;
+      const val = parseFloat(e.target.value);
+      if (Number.isFinite(val) && audio.duration) {
+        audio.currentTime = val;
+      }
+    });
+
+    /* ==========================================================================
+       DOM LISTENERS
+       ========================================================================== */
+    btnPaste.addEventListener('click', async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        inputUrl.value = text;
+        checkQuoteVisibility();
+      } catch (err) {
+        inputUrl.focus();
+      }
+    });
+
+    inputUrl.addEventListener('input', () => {
+      checkQuoteVisibility();
+    });
+
+    inputUrl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        startDownloadFlow();
+      }
+    });
+
+    btnStartDownload.addEventListener('click', startDownloadFlow);
+    btnStopDownload.addEventListener('click', () => {
+      cancelRequested = true;
+      btnStopDownload.disabled = true;
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      setLanguage(currentLang);
+      updateSavePathDisplay();
+      checkQuoteVisibility();
+      if (downloadFolder) {
+        scanAndLoadLibrary(downloadFolder);
+      }
+    });
+  </script>
+</body>
+</html>

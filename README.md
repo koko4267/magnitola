@@ -1,212 +1,141 @@
+<p align="center">
+  <img src="magnitolalogo.png" alt="MAGNITOLA" width="220" />
+</p>
+
 # MAGNITOLA
 
-Десктопное приложение для загрузки музыки с сервиса **SoundCloud** и встроенный автономный аудиоплеер. Разработано на базе **TypeScript**, **Electron**, **React** и **Vite**.
-
-Desktop application for downloading music from **SoundCloud** and offline audio player. Built with **TypeScript**, **Electron**, **React**, and **Vite**.
+Desktop music downloader and offline player for SoundCloud built with vanilla HTML/CSS/JS and Electron.
 
 ---
 
-## Языки / Languages
-
-- [Русский](#русский)
-- [English](#english)
-
----
-
-<a name="русский"></a>
-## Русский
-
-### 1. Назначение
-
-MAGNITOLA предназначена для загрузки аудиозаписей с платформы SoundCloud на локальный диск пользователя с автоматическим извлечением метаданных, генерацией ID3v2.3 тегов и встраиванием обложек. Программа также содержит встроенный плеер для локального воспроизведения скачанных треков.
-
-### 2. Загрузка с SoundCloud
-
-#### Поддерживаемые форматы ссылок
-- **Отдельные треки**: `https://soundcloud.com/artist-name/track-name`
-- **Плейлисты и сеты**: `https://soundcloud.com/artist-name/sets/playlist-name`
-- **Альбомы**: `https://soundcloud.com/artist-name/sets/album-name`
-- **Избранное пользователя (лайки)**: `https://soundcloud.com/artist-name/likes`
-- **Мобильные короткие ссылки**: `https://on.soundcloud.com/xxxx`
-- **Ссылки без указания протокола**: `soundcloud.com/artist-name/track-name`
-
-#### Механизм работы загрузчика
-1. **Разрешение ссылки**: адрес разрешается через API SoundCloud (`api-v2.soundcloud.com/resolve`). При передаче коротких ссылок `on.soundcloud.com` выполняется автоматическое раскрытие HTTP-редиректа.
-2. **Выбор аудиопотока**:
-   - Приоритет отдается прямому прогрессивному потоку MP3 (`audio/mpeg`, 128 kbps).
-   - В случае отсутствия прямого MP3 используется поток HLS MP3.
-   - Предусмотрен отказоустойчивый перебор кандидатов транскодирования при сбоях отдельных CDN-эндпоинтов SoundCloud.
-3. **Обработка в оперативной памяти**: потоковые данные аудио и обложки скачиваются непосредственно в память без записи промежуточных данных во временные системные папки (`%TEMP%` / `/tmp`).
-4. **Тегирование ID3v2.3**:
-   - Название трека (титр `TIT2`).
-   - Исполнитель (титр `TPE1`).
-   - Встроенная обложка альбома (титр `APIC`, JPEG/PNG, 500x500).
-5. **Предотвращение дубликатов**: перед загрузкой проверяется наличие файла с аналогичным именем в целевой папке; уже существующие треки пропускаются без повторной загрузки.
-6. **Атомарная запись**: итоговый файл сохраняется напрямую в выбранную пользователем папку загрузок.
-
-### 3. Встроенный аудиоплеер
-
-- **Автоматическая индексация**: при запуске приложение сканирует выбранную папку загрузок и строит локальную библиотеку треков.
-- **Поддерживаемые форматы воспроизведения**: `.mp3`, `.wav`, `.flac`, `.ogg`, `.m4a`.
-- **Потоковый протокол `media://`**: использует протокол со стандартом RFC 7233 (HTTP 206 Partial Content), что обеспечивает мгновенную перемотку файлов любого размера без предварительного чтения файла целиком.
-- **Интерфейс воспроизведения**:
-   - Кнопки управления («Предыдущий», «Воспроизведение/Пауза», «Следующий»).
-   - Интерактивный регулятор перемотки (seek bar) с индикацией текущего времени и общей длительности.
-   - Окно крупной обложки активного трека.
-   - Список треков с метаданными и длительностью.
-   - Циклический переход к следующему треку по окончании текущего.
-
-### 4. Автономность и отсутствие следов в системе
-
-- **Портативный режим**: приложение не требует установки, не создает записей в системном реестре Windows и не регистрирует фоновых служб.
-- **Отключение дисковых кэшей Chromium**: запуск с параметрами `--disable-http-cache` и `--disable-gpu-shader-disk-cache` предотвращает накопление кэш-файлов браузерного движка на жестком диске.
-- **Очистка данных сессии**: при закрытии приложения вызывается принудительная очистка данных сессии (`clearCache`, `clearStorageData`).
-- **Изоляция конфигурации**: файл настроек (`magnitola-settings.json`) сохраняет исключительно выбранную папку загрузок, язык интерфейса и состояние боковой панели.
-
-### 5. Архитектура и безопасность
-
-- **Многопроцессная модель Electron**:
-  - `Main Process`: сетевые запросы к API SoundCloud, запись файлов на диск, регистрация кастомного протокола `media://`, системные диалоги выбора папок.
-  - `Preload Script`: строго ограниченный, типизированный интерфейс `electronAPI` через `contextBridge`.
-  - `Renderer Process`: графический интерфейс на React с изолированным контекстом (`contextIsolation: true`, `nodeIntegration: false`).
-- **Политика безопасности контента (CSP)**: `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: media: https:; media-src 'self' media: data:;`.
-
-### 6. Системные требования
-
-- **Node.js**: версия 20.0.0 или выше.
-- **npm**: версия 10.0.0 или выше.
-- **Поддерживаемые ОС**: Windows 10/11 (x64), Linux (x64), macOS 11+ (x64 / arm64).
-
-### 7. Команды проекта
-
-```bash
-# Установка зависимостей
-npm install
-
-# Запуск в режиме разработки с HMR
-npm run dev
-
-# Проверка типов TypeScript (Node + Web)
-npm run typecheck
-
-# Запуск набора модульных тестов Vitest
-npm test
-
-# Сборка продакшн-бандла
-npm run build
-
-# Сборка portable .exe для Windows
-npm run build:win
-
-# Сборка AppImage для Linux
-npm run build:linux
-
-# Сборка DMG для macOS
-npm run build:mac
-
-# Сборка для всех платформ
-npm run build:all
-```
-
----
-
-<a name="english"></a>
 ## English
 
-### 1. Purpose
+### Overview
+MAGNITOLA is a standalone desktop application designed to download audio from SoundCloud with automatic ID3v2.3 metadata tagging, embed high-resolution artwork (500x500), and provide offline playback via a retro dual-pane interface. The entire frontend, styles, and client logic are packaged in a single `index.html` file powered by a lightweight Electron runner.
 
-MAGNITOLA is a standalone desktop application designed to download audio tracks from the SoundCloud platform directly to the local filesystem with automatic metadata extraction, ID3v2.3 tag writing, and artwork embedding. It includes an integrated local audio player for offline playback.
+### Features
+- **SoundCloud Ingestion**:
+  - Individual tracks: `https://soundcloud.com/artist/track`
+  - Playlists & albums: `https://soundcloud.com/artist/sets/...`
+  - User profiles: `https://soundcloud.com/artist` or `.../likes` fetches the user's entire list of likes (favorites) with automated pagination.
+  - Shortlinks: automatic expansion of `https://on.soundcloud.com/xxxx` redirects.
+- **Audio & Tagging Engine**:
+  - MP3 stream prioritization (`audio/mpeg`, 128 kbps) with HLS (`.m3u8`) segment concatenation fallback.
+  - Pure JavaScript ID3v2.3 writer embedding UTF-16 text frames (`TIT2` Title, `TPE1` Artist) and `APIC` front cover art (500x500 JPEG/PNG).
+  - Direct file write to system Downloads folder (`~/Downloads`) or selected custom directory.
+- **Retro Audio Player**:
+  - Accurate seeking and scrub bar dragging via `media://` streaming protocol supporting RFC 7233 (HTTP 206 Partial Content byte ranges).
+  - Large artwork display (170x170), seek bar with elapsed/total time, playback controls (`|◀`, `▶/❚❚`, `▶|`), and track list with active playback indicators.
+  - Automatic indexing of local audio files (`.mp3`, `.wav`, `.ogg`, `.flac`, `.m4a`, `.aac`) in the target directory upon startup.
+- **Architecture**:
+  - Single-file frontend: all styles, markup, and JavaScript live directly in `index.html`.
+  - Minimal Electron launcher (`main.js`) with disabled Chromium disk caches (`--disable-http-cache`, `--disable-gpu-shader-disk-cache`).
+  - Bilingual interface (English / Russian) toggled with a single click.
 
-### 2. SoundCloud Downloading
+### Requirements
+- Node.js 18 or higher
+- npm 9 or higher
 
-#### Supported URL Formats
-- **Individual Tracks**: `https://soundcloud.com/artist-name/track-name`
-- **Playlists & Sets**: `https://soundcloud.com/artist-name/sets/playlist-name`
-- **Albums**: `https://soundcloud.com/artist-name/sets/album-name`
-- **User Likes**: `https://soundcloud.com/artist-name/likes`
-- **Mobile Short Links**: `https://on.soundcloud.com/xxxx`
-- **URLs without Protocol**: `soundcloud.com/artist-name/track-name`
-
-#### Ingestion Workflow
-1. **URL Resolution**: The URL is resolved via the SoundCloud API (`api-v2.soundcloud.com/resolve`). When an `on.soundcloud.com` short link is provided, HTTP redirects are followed automatically.
-2. **Audio Stream Selection**:
-   - Progressive MP3 streams (`audio/mpeg`, 128 kbps) are prioritized.
-   - If progressive MP3 is unavailable, HLS MP3 streams are selected.
-   - An automatic fallback traversal mechanism tests candidate stream endpoints sequentially if a specific CDN URL returns an error.
-3. **In-Memory Streaming**: Audio chunks and album covers are downloaded into memory buffers without creating unmanaged temporary files in system directories (`%TEMP%` / `/tmp`).
-4. **ID3v2.3 Tagging**:
-   - Track title (`TIT2` frame).
-   - Artist name (`TPE1` frame).
-   - High-resolution album artwork (`APIC` frame, JPEG/PNG, 500x500).
-5. **Deduplication**: Files with matching filenames in the destination folder are detected and skipped to avoid duplicate downloads.
-6. **Atomic File Persistence**: Finished audio data is written directly to the user-selected destination directory.
-
-### 3. Integrated Audio Player
-
-- **Automatic Library Discovery**: On launch, the player indexes audio files located in the configured download folder.
-- **Supported Audio Formats**: `.mp3`, `.wav`, `.flac`, `.ogg`, `.m4a`.
-- **Custom `media://` Protocol**: Supports RFC 7233 byte-range requests (HTTP 206 Partial Content), enabling instantaneous seek bar scrubbing without buffering entire audio files into memory.
-- **Controls & Interface**:
-  - Playback controls (Previous, Play/Pause, Next).
-  - Scrub bar with current position and total duration display.
-  - Large album artwork display for the currently active track.
-  - Track list displaying titles, artists, and durations.
-  - Sequential cyclic playback queue.
-
-### 4. Privacy & System Non-Intrusiveness
-
-- **Portable Operation**: The application runs portably without requiring administrative installation, registry modifications, or background daemon services.
-- **Disabled Disk Caching**: Chromium runtime flags `--disable-http-cache` and `--disable-gpu-shader-disk-cache` are enforced to prevent cache accumulation on disk.
-- **Session Cleanup**: Session caches and storage entries are flushed on application exit (`clearCache`, `clearStorageData`).
-- **Isolated Settings Storage**: Configuration (`magnitola-settings.json`) only retains user preferences: download directory path, UI language, and sidebar state.
-
-### 5. Architecture & Security
-
-- **Multi-Process Architecture**:
-  - `Main Process`: Handles SoundCloud API communication, file writes, custom protocol registration, and native folder dialogs.
-  - `Preload Script`: Exposes a secure, strictly-typed `electronAPI` bridge via `contextBridge`.
-  - `Renderer Process`: React user interface running in a sandboxed context (`contextIsolation: true`, `nodeIntegration: false`).
-- **Content Security Policy (CSP)**: `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: media: https:; media-src 'self' media: data:;`.
-
-### 6. System Requirements
-
-- **Node.js**: version 20.0.0 or higher.
-- **npm**: version 10.0.0 or higher.
-- **Supported Operating Systems**: Windows 10/11 (x64), Linux (x64), macOS 11+ (x64 / arm64).
-
-### 7. Commands
-
+### Installation & Run
 ```bash
-# Install dependencies
 npm install
+npm start
+```
 
-# Start development server with HMR
-npm run dev
-
-# Run TypeScript type check (Node + Web)
-npm run typecheck
-
-# Run Vitest test suite
-npm test
-
-# Build production bundle
-npm run build
-
-# Build portable Windows executable (.exe)
+### Build Executables
+```bash
+# Windows (portable .exe)
 npm run build:win
 
-# Build Linux AppImage
+# Linux (AppImage)
 npm run build:linux
 
-# Build macOS DMG
+# macOS (dmg)
 npm run build:mac
 
-# Build for all platforms
+# All platforms
 npm run build:all
 ```
 
+### Project Structure
+```
+magnitola/
+├── index.html          # Monolithic application file (HTML layout, retro CSS, client JS)
+├── main.js             # Electron main process (window lifecycle, media:// HTTP 206 handler)
+├── package.json        # Project metadata and electron-builder packaging configurations
+├── icon.ico            # Windows application icon
+├── magnitolalogo.png   # Application logo
+├── synclinelogo.png    # Syncline widget graphic asset
+├── .gitignore          # Repository ignore rules
+└── README.md           # Documentation
+```
+
+### License
+MIT
+
 ---
 
-## License
+## Русский
 
-[MIT](LICENSE)
+### Обзор
+MAGNITOLA — автономное десктопное приложение для загрузки аудиозаписей с сервиса SoundCloud с автоматической записью метаданных ID3v2.3, встраиванием обложек высокого разрешения (500x500) и локальным воспроизведением через ретро-интерфейс. Вся визуальная часть, стили и клиентская логика содержатся в едином файле `index.html`, работающем под управлением легковесного загрузчика Electron.
+
+### Возможности
+- **Загрузка с SoundCloud**:
+  - Одиночные треки: `https://soundcloud.com/artist/track`
+  - Плейлисты и альбомы: `https://soundcloud.com/artist/sets/...`
+  - Профили пользователей: `https://soundcloud.com/artist` или `.../likes` загружает полный список лайков (избранного) пользователя с автоматической пагинацией.
+  - Короткие ссылки: автоматическое раскрытие HTTP-редиректов `https://on.soundcloud.com/xxxx`.
+- **Движок аудио и тегирования**:
+  - Приоритет MP3-потоков (`audio/mpeg`, 128 kbps) с отказоустойчивой склейкой сегментов HLS (`.m3u8`).
+  - Чистый JavaScript-генератор ID3v2.3: запись UTF-16 текстовых фреймов (`TIT2` Название, `TPE1` Артист) и обложки `APIC` (500x500 JPEG/PNG).
+  - Прямое сохранение файлов в системную папку «Загрузки» (`~/Downloads`) или выбранную директорию.
+- **Встроенный ретро-плеер**:
+  - Точная перемотка полосы воспроизведения через протокол `media://` со стандартом RFC 7233 (HTTP 206 Partial Content диапазон байтов).
+  - Крупная обложка (170x170), полоса перемотки с индикацией текущего и общего времени, кнопки управления (`|◀`, `▶/❚❚`, `▶|`) и список треков.
+  - Автоматическое сканирование локальных аудиофайлов (`.mp3`, `.wav`, `.ogg`, `.flac`, `.m4a`, `.aac`) в целевой папке при старте.
+- **Архитектура**:
+  - Единый файл интерфейса: все стили, разметка и JavaScript-логика находятся внутри `index.html`.
+  - Минималистичный загрузчик Electron (`main.js`) с отключенным кэшированием Chromium (`--disable-http-cache`, `--disable-gpu-shader-disk-cache`).
+  - Двуязычный интерфейс (русский / английский) с переключением в один клик.
+
+### Требования
+- Node.js 18 или выше
+- npm 9 или выше
+
+### Установка и запуск
+```bash
+npm install
+npm start
+```
+
+### Сборка исполняемых файлов
+```bash
+# Windows (portable .exe)
+npm run build:win
+
+# Linux (AppImage)
+npm run build:linux
+
+# macOS (dmg)
+npm run build:mac
+
+# Все платформы
+npm run build:all
+```
+
+### Структура проекта
+```
+magnitola/
+├── index.html          # Монолитный файл приложения (разметка HTML, ретро-CSS, клиентский JS)
+├── main.js             # Главный процесс Electron (окно, обработчик media:// HTTP 206)
+├── package.json        # Метаданные проекта и конфигурация сборки electron-builder
+├── icon.ico            # Иконка приложения для Windows
+├── magnitolalogo.png   # Логотип приложения
+├── synclinelogo.png    # Графический элемент виджета Syncline
+├── .gitignore          # Правила игнорирования Git
+└── README.md           # Документация
+```
+
+### Лицензия
+MIT

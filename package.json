@@ -1,20 +1,17 @@
 {
   "name": "magnitola",
-  "version": "1.1.0",
+  "version": "1.0.0",
   "description": "Retro Music & Metadata Downloader and Player with ID3v2.3 tagging",
-  "main": "./out/main/index.js",
+  "main": "main.js",
   "author": "MAGNITOLA Team",
   "license": "MIT",
   "scripts": {
-    "dev": "electron-vite dev",
-    "build": "electron-vite build",
-    "start": "electron-vite preview",
-    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
-    "test": "vitest run",
-    "build:win": "npm run build && electron-builder --win portable --publish never",
-    "build:linux": "npm run build && electron-builder --linux AppImage --publish never",
-    "build:mac": "npm run build && electron-builder --mac dmg --publish never",
-    "build:all": "npm run build && electron-builder -wlm --publish never"
+    "start": "electron .",
+    "build": "electron-builder --win portable --publish never",
+    "build:win": "electron-builder --win portable --publish never",
+    "build:linux": "electron-builder --linux AppImage --publish never",
+    "build:mac": "electron-builder --mac dmg --publish never",
+    "build:all": "electron-builder -wlm --publish never"
   },
   "keywords": [
     "music",
@@ -22,40 +19,23 @@
     "player",
     "mp3",
     "electron",
-    "typescript",
-    "react",
     "retro"
   ],
-  "dependencies": {
-    "music-metadata": "^7.14.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "zustand": "^5.0.0"
-  },
   "devDependencies": {
-    "@types/node": "^20.17.0",
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.3",
     "electron": "^33.2.0",
-    "electron-builder": "^25.1.8",
-    "electron-vite": "^2.3.0",
-    "typescript": "^5.6.3",
-    "vite": "^5.4.10",
-    "vitest": "^2.1.3"
+    "electron-builder": "^25.1.8"
   },
   "build": {
     "appId": "com.magnitola.downloader",
     "productName": "MAGNITOLA",
     "directories": {
-      "output": "dist",
-      "buildResources": "resources"
+      "output": "dist"
     },
     "win": {
       "target": [
         "portable"
       ],
-      "icon": "resources/icon.ico"
+      "icon": "icon.ico"
     },
     "portable": {
       "artifactName": "MAGNITOLA-Windows.${ext}"
@@ -65,7 +45,7 @@
         "AppImage"
       ],
       "artifactName": "MAGNITOLA-Linux.${ext}",
-      "icon": "resources/magnitolalogo.png",
+      "icon": "magnitolalogo.png",
       "category": "Audio"
     },
     "mac": {
@@ -73,17 +53,16 @@
         "dmg"
       ],
       "artifactName": "MAGNITOLA-macOS.${ext}",
-      "icon": "resources/magnitolalogo.png",
+      "icon": "magnitolalogo.png",
       "category": "public.app-category.music",
       "identity": null
     },
     "files": [
-      "out/**/*",
-      "resources/**/*"
+      "index.html",
+      "main.js",
+      "magnitolalogo.png",
+      "synclinelogo.png",
+      "icon.ico"
     ]
-  },
-  "allowScripts": {
-    "electron@33.4.11": true,
-    "esbuild@0.21.5": true
   }
 }
