@@ -1,0 +1,748 @@
+/* ==========================================================================
+   CLEAN RETRO DESKTOP UI (Zero radius, Zero blur, Solid palette)
+   ========================================================================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+:root {
+  --bg-main: #4c5844;
+  --bg-header: #3b4435;
+  --bg-dark: #282e22;
+  --bg-panel: #242a20;
+  --bg-input: #1c2219;
+  --border-highlight: #6b7c61;
+  --border-shadow: #1e2419;
+  --border-light: #5d6d53;
+  --border-dark: #171c14;
+  --btn-bg: #4e5a46;
+  --btn-hover: #586650;
+  --btn-active: #384232;
+  --text-main: #d0dcce;
+  --text-bright: #ffffff;
+  --text-muted: #8c9c86;
+  --green-bar: #95c34e;
+  --green-dark: #7aa53d;
+  --accent-gold: #e2c174;
+  --accent-red: #d15656;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: "Tahoma", "Segoe UI", Arial, sans-serif;
+  font-size: 11px;
+  line-height: 1.35;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* App Root Container */
+.app-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--bg-main);
+}
+
+/* Main Download Pane */
+.main-pane {
+  flex: 1;
+  min-width: 0;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+/* Groupbox */
+.groupbox {
+  border-top: 1px solid var(--border-highlight);
+  border-left: 1px solid var(--border-highlight);
+  border-right: 1px solid var(--border-shadow);
+  border-bottom: 1px solid var(--border-shadow);
+  padding: 10px;
+  position: relative;
+  background-color: var(--bg-main);
+}
+
+.groupbox-title {
+  font-weight: bold;
+  color: var(--accent-gold);
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+
+/* Buttons */
+.btn {
+  background-color: var(--btn-bg);
+  color: var(--text-main);
+  border-top: 1px solid var(--border-highlight);
+  border-left: 1px solid var(--border-highlight);
+  border-bottom: 1px solid var(--border-shadow);
+  border-right: 1px solid var(--border-shadow);
+  padding: 4px 12px;
+  font-family: "Tahoma", sans-serif;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) {
+  background-color: var(--btn-hover);
+  color: var(--text-bright);
+}
+
+.btn:active:not(:disabled) {
+  border-top: 1px solid var(--border-shadow);
+  border-left: 1px solid var(--border-shadow);
+  border-bottom: 1px solid var(--border-highlight);
+  border-right: 1px solid var(--border-highlight);
+  background-color: var(--btn-active);
+  color: var(--text-bright);
+}
+
+.btn:disabled {
+  background-color: #384033;
+  color: #636f5c;
+  border-color: #434c3d;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  color: #ffffff;
+  background-color: #55664c;
+  border-top-color: #7b946d;
+  border-left-color: #7b946d;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #617556;
+}
+
+.btn-sm {
+  height: 22px;
+  padding: 2px 8px;
+  font-size: 10px;
+}
+
+/* Text Input */
+.input-text {
+  background-color: var(--bg-input);
+  color: var(--text-bright);
+  border-top: 1px solid var(--border-dark);
+  border-left: 1px solid var(--border-dark);
+  border-bottom: 1px solid var(--border-light);
+  border-right: 1px solid var(--border-light);
+  padding: 4px 8px;
+  font-family: "Lucida Console", "Consolas", monospace;
+  font-size: 11px;
+  height: 26px;
+  width: 100%;
+  user-select: text;
+}
+
+.input-text:focus {
+  outline: 1px solid var(--green-bar);
+}
+
+.url-bar-row {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+/* Download Card */
+.download-card {
+  display: flex;
+  gap: 12px;
+  padding: 10px;
+  background-color: var(--bg-panel);
+  border-top: 1px solid var(--border-dark);
+  border-left: 1px solid var(--border-dark);
+  border-bottom: 1px solid var(--border-light);
+  border-right: 1px solid var(--border-light);
+}
+
+.album-art-box {
+  width: 84px;
+  height: 84px;
+  min-width: 84px;
+  background-color: #171c14;
+  border: 1px solid var(--bg-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.album-art-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.album-art-placeholder {
+  color: var(--accent-gold);
+  font-size: 28px;
+  font-weight: bold;
+  font-family: "Tahoma", sans-serif;
+  user-select: none;
+}
+
+.track-details-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.track-title {
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--text-bright);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track-artist {
+  font-size: 11px;
+  color: var(--accent-gold);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Retro Progress Bar */
+.progress-track {
+  background-color: #171c14;
+  height: 18px;
+  border-top: 1px solid #11140e;
+  border-left: 1px solid #11140e;
+  border-bottom: 1px solid var(--border-light);
+  border-right: 1px solid var(--border-light);
+  position: relative;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--green-bar) 0px,
+    var(--green-bar) 7px,
+    var(--green-dark) 7px,
+    var(--green-dark) 9px
+  );
+  transition: width 0.1s linear;
+}
+
+.progress-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 1px 1px 0px #000;
+}
+
+.download-stats-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: "Lucida Console", "Consolas", monospace;
+}
+
+/* Quotes Box */
+.quote-box {
+  margin-top: 6px;
+  padding: 4px 8px;
+  background-color: #21261d;
+  border: 1px solid #1b2017;
+  color: var(--accent-gold);
+  font-style: italic;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Bottom Controls */
+.bottom-controls-row {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.bottom-right-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Save Path Info */
+.save-path-row {
+  padding: 4px 8px;
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-shadow);
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.save-path-row strong {
+  color: var(--text-bright);
+}
+
+/* Try Syncline Promo Widget */
+.syncline-widget {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--text-main);
+  background-color: var(--bg-panel);
+  border-top: 1px solid var(--border-dark);
+  border-left: 1px solid var(--border-dark);
+  border-bottom: 1px solid var(--border-light);
+  border-right: 1px solid var(--border-light);
+  padding: 3px 8px;
+  height: 28px;
+  cursor: pointer;
+  transition: background-color 0.1s;
+}
+
+.syncline-widget:hover {
+  background-color: #2e3629;
+}
+
+.syncline-widget:hover .syncline-btn {
+  background-color: var(--btn-hover);
+  color: #ffffff;
+}
+
+.syncline-logo-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  display: block;
+}
+
+.syncline-text {
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--accent-gold);
+  letter-spacing: 0.3px;
+}
+
+.syncline-btn {
+  background-color: var(--btn-bg);
+  color: var(--text-bright);
+  border-top: 1px solid var(--border-highlight);
+  border-left: 1px solid var(--border-highlight);
+  border-bottom: 1px solid var(--border-shadow);
+  border-right: 1px solid var(--border-shadow);
+  padding: 1px 6px;
+  font-size: 9px;
+  font-weight: bold;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Language Toggle Button with Flag */
+.single-lang-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--btn-bg);
+  border-top: 1px solid var(--border-highlight);
+  border-left: 1px solid var(--border-highlight);
+  border-bottom: 1px solid var(--border-shadow);
+  border-right: 1px solid var(--border-shadow);
+  color: var(--text-bright);
+  padding: 2px 8px;
+  height: 24px;
+  font-size: 10px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.single-lang-btn:hover {
+  background-color: var(--btn-hover);
+}
+
+.single-lang-btn:active {
+  border-top: 1px solid var(--border-shadow);
+  border-left: 1px solid var(--border-shadow);
+  border-bottom: 1px solid var(--border-highlight);
+  border-right: 1px solid var(--border-highlight);
+  background-color: var(--btn-active);
+}
+
+.flag-icon {
+  width: 15px;
+  height: 10px;
+  display: inline-block;
+  border: 1px solid #000;
+}
+
+/* ==========================================================================
+   RETRO MUSIC PLAYER SIDEBAR
+   ========================================================================== */
+.player-sidebar {
+  width: 320px;
+  min-width: 300px;
+  background-color: var(--bg-header);
+  border-left: 2px solid var(--border-shadow);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Large Album Artwork View */
+.large-art-container {
+  padding: 10px;
+  background-color: var(--bg-panel);
+  border-bottom: 1px solid var(--border-shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+
+.large-art-box {
+  width: 170px;
+  height: 170px;
+  max-width: 100%;
+  aspect-ratio: 1;
+  background-color: #171c14;
+  border-top: 1px solid var(--border-dark);
+  border-left: 1px solid var(--border-dark);
+  border-bottom: 1px solid var(--border-light);
+  border-right: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.large-art-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.large-art-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  user-select: none;
+}
+
+.large-art-placeholder-icon {
+  font-size: 52px;
+  color: var(--accent-gold);
+  line-height: 1;
+}
+
+.large-art-placeholder-label {
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+}
+
+.large-art-details {
+  width: 100%;
+  text-align: center;
+  min-width: 0;
+}
+
+.large-art-title {
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--text-bright);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 4px;
+}
+
+.large-art-artist {
+  font-size: 11px;
+  color: var(--accent-gold);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 4px;
+}
+
+/* Playback Control Bar */
+.player-controls-panel {
+  padding: 8px 10px;
+  background-color: var(--bg-panel);
+  border-bottom: 1px solid var(--border-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.player-buttons-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.playback-btn-group {
+  display: flex;
+  gap: 4px;
+}
+
+.playback-btn {
+  width: 30px;
+  height: 26px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+/* Seek / Progress Bar */
+.player-seek-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.seek-bar-track-wrapper {
+  position: relative;
+  height: 14px;
+  background-color: #171c14;
+  border-top: 1px solid #11140e;
+  border-left: 1px solid #11140e;
+  border-bottom: 1px solid var(--border-light);
+  border-right: 1px solid var(--border-light);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.retro-seek-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--green-bar) 0px,
+    var(--green-bar) 7px,
+    var(--green-dark) 7px,
+    var(--green-dark) 9px
+  );
+  pointer-events: none;
+  transition: width 0.05s linear;
+}
+
+.retro-seek-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.seek-time-row {
+  display: flex;
+  justify-content: space-between;
+  font-family: "Lucida Console", "Consolas", monospace;
+  font-size: 10px;
+  color: var(--accent-gold);
+}
+
+/* Now Playing Mini Display */
+.now-playing-strip {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-dark);
+  padding: 4px 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+}
+
+.now-playing-info {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-bright);
+  font-weight: bold;
+  max-width: 100%;
+}
+
+/* Track List */
+.track-list-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background-color: #1f251c;
+}
+
+.track-item-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 8px;
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-shadow);
+  cursor: pointer;
+  transition: background-color 0.1s;
+}
+
+.track-item-row:hover {
+  background-color: #313a2b;
+}
+
+.track-item-row.active {
+  background-color: #3b4733;
+  border-color: var(--accent-gold);
+}
+
+.track-item-art {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  background-color: #141812;
+  border: 1px solid var(--border-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.track-item-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.track-item-icon {
+  color: var(--accent-gold);
+  font-size: 22px;
+}
+
+.track-item-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+
+.track-item-title {
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--text-bright);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.25;
+}
+
+.track-item-row.active .track-item-title {
+  color: var(--accent-gold);
+}
+
+.track-item-artist {
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track-item-badge {
+  font-size: 11px;
+  color: var(--green-bar);
+  font-weight: bold;
+}
+
+.track-list-empty {
+  padding: 30px 10px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+/* Custom Retro Scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+  background-color: var(--bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--btn-bg);
+  border-top: 1px solid var(--border-highlight);
+  border-left: 1px solid var(--border-highlight);
+  border-bottom: 1px solid var(--border-shadow);
+  border-right: 1px solid var(--border-shadow);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: var(--btn-active);
+}
