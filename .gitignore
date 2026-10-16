@@ -1,30 +1,19 @@
-# Dependencies
 node_modules/
-
-# Production builds & artifacts
 dist/
 build/
 out/
 *.exe
-*.AppImage
-*.dmg
 *.zip
-*.tar.gz
 
-# Caches & temporary files
 .cache/
 coverage/
 *.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
-# OS metadata
-.DS_Store
 Thumbs.db
 Desktop.ini
+.DS_Store
 
-# IDE & editors
 .vscode/
 .idea/
 *.suo
@@ -32,6 +21,6 @@ Desktop.ini
 *.swp
 *.swo
 
-# Environment
 .env
 .env.local
+.env.*.local

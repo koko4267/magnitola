@@ -1,17 +1,13 @@
 {
   "name": "magnitola",
   "version": "1.0.0",
-  "description": "Retro Music & Metadata Downloader and Player with ID3v2.3 tagging",
+  "description": "Music & Metadata Downloader and Player with ID3v2.3 tagging",
   "main": "main.js",
-  "author": "MAGNITOLA Team",
+  "author": "MAGNItola",
   "license": "MIT",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder --win portable --publish never",
-    "build:win": "electron-builder --win portable --publish never",
-    "build:linux": "electron-builder --linux AppImage --publish never",
-    "build:mac": "electron-builder --mac dmg --publish never",
-    "build:all": "electron-builder -wlm --publish never"
+    "build": "electron-builder --win zip --x64 --publish never"
   },
   "keywords": [
     "music",
@@ -19,7 +15,7 @@
     "player",
     "mp3",
     "electron",
-    "retro"
+    "soundcloud"
   ],
   "devDependencies": {
     "electron": "^33.2.0",
@@ -27,41 +23,32 @@
   },
   "build": {
     "appId": "com.magnitola.downloader",
-    "productName": "MAGNITOLA",
+    "productName": "MAGNItola",
+    "asar": true,
     "directories": {
       "output": "dist"
     },
     "win": {
       "target": [
-        "portable"
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
       ],
-      "icon": "icon.ico"
-    },
-    "portable": {
-      "artifactName": "MAGNITOLA-Windows.${ext}"
-    },
-    "linux": {
-      "target": [
-        "AppImage"
-      ],
-      "artifactName": "MAGNITOLA-Linux.${ext}",
-      "icon": "magnitolalogo.png",
-      "category": "Audio"
-    },
-    "mac": {
-      "target": [
-        "dmg"
-      ],
-      "artifactName": "MAGNITOLA-macOS.${ext}",
-      "icon": "magnitolalogo.png",
-      "category": "public.app-category.music",
-      "identity": null
+      "icon": "icon.ico",
+      "artifactName": "MAGNItola-Windows.${ext}"
     },
     "files": [
       "index.html",
       "main.js",
-      "magnitolalogo.png",
-      "synclinelogo.png",
+      "preload.js",
+      "lame.min.js",
+      "magnitolalogo.jpg",
+      "synclinelogo.jpg",
+      "ru.png",
+      "us.png",
       "icon.ico"
     ]
   }

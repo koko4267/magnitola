@@ -1,13 +1,54 @@
-const { app, BrowserWindow, shell, ipcMain, dialog, protocol } = require('electron');
+const { app, BrowserWindow, shell, ipcMain, dialog, protocol, session, clipboard } = require('electron');
 const path = require('path');
+const os = require('os');
 const fs = require('fs');
 const { Readable } = require('stream');
 
-// Prevent Electron from creating persistent HTTP disk cache and GPU shader cache
+// Временная папка сессии
+const tempUserData = path.join(os.tmpdir(), `magnitola-session-${process.pid}`);
+try {
+  fs.mkdirSync(tempUserData, { recursive: true });
+} catch {}
+app.setPath('userData', tempUserData);
+
+// Удаление старых сессий
+function cleanStaleTempDirs() {
+  try {
+    const tmp = os.tmpdir();
+    const entries = fs.readdirSync(tmp);
+    for (const name of entries) {
+      if (name.startsWith('magnitola-session-') && name !== `magnitola-session-${process.pid}`) {
+        try {
+          fs.rmSync(path.join(tmp, name), { recursive: true, force: true });
+        } catch {}
+      }
+    }
+  } catch {}
+}
+
+cleanStaleTempDirs();
+
+// Защита от второго экземпляра
+const gotSingleInstanceLock = app.requestSingleInstanceLock();
+if (!gotSingleInstanceLock) {
+  app.quit();
+  process.exit(0);
+}
+
+// Отключение дискового кэша
 app.commandLine.appendSwitch('disable-http-cache');
 app.commandLine.appendSwitch('disable-gpu-shader-disk-cache');
+app.commandLine.appendSwitch('disable-software-rasterizer');
+
+// Очистка сессии при выходе
+app.on('will-quit', () => {
+  try {
+    fs.rmSync(tempUserData, { recursive: true, force: true });
+  } catch {}
+});
 
 const MEDIA_SCHEME = 'media';
+const IN_MEMORY_PARTITION = 'in-memory';
 
 const ALLOWED_MEDIA_MIMES = {
   '.mp3': 'audio/mpeg',
@@ -23,7 +64,7 @@ const ALLOWED_MEDIA_MIMES = {
   '.webp': 'image/webp'
 };
 
-// Register custom media scheme privileges before app is ready for audio streaming
+// Регистрация схемы media://
 protocol.registerSchemesAsPrivileged([
   {
     scheme: MEDIA_SCHEME,
@@ -32,16 +73,19 @@ protocol.registerSchemesAsPrivileged([
       secure: true,
       stream: true,
       supportFetchAPI: true,
-      bypassCSP: true
+      corsEnabled: true
     }
   }
 ]);
 
-if (process.platform === 'win32') {
-  app.setAppUserModelId('com.magnitola.downloader');
-}
+app.setAppUserModelId('com.magnitola.downloader');
 
 let mainWindow = null;
+
+function isTrustedSender(event) {
+  if (!mainWindow || !event.senderFrame) return false;
+  return event.senderFrame === mainWindow.webContents.mainFrame;
+}
 
 function parseMediaPath(requestUrl) {
   try {
@@ -55,7 +99,7 @@ function parseMediaPath(requestUrl) {
       rawPath = rawPath.slice(1);
     }
 
-    if (process.platform === 'win32' && /^\/[a-zA-Z]:/.test(rawPath)) {
+    if (/^\/[a-zA-Z]:/.test(rawPath)) {
       rawPath = rawPath.slice(1);
     }
 
@@ -78,12 +122,10 @@ async function handleMediaRequest(requestUrl, rangeHeader) {
     const mimeType = ALLOWED_MEDIA_MIMES[ext];
 
     if (!mimeType) {
-      console.warn(`[mediaProtocol] Forbidden media file extension: ${ext}`);
       return new Response('Forbidden file type', { status: 403 });
     }
 
     if (!fs.existsSync(resolvedPath)) {
-      console.warn(`[mediaProtocol] File not found: ${resolvedPath}`);
       return new Response('File not found', { status: 404 });
     }
 
@@ -94,8 +136,7 @@ async function handleMediaRequest(requestUrl, rangeHeader) {
 
     const fileSize = stat.size;
 
-    // RFC 7233 Range request support (HTTP 206 Partial Content)
-    // Critical for HTML5 Audio seeking and scrub bar dragging
+    // Range-запросы для перемотки
     if (rangeHeader) {
       const match = /^bytes=(\d*)-(\d*)$/.exec(rangeHeader.trim());
       if (!match) {
@@ -163,63 +204,48 @@ async function handleMediaRequest(requestUrl, rangeHeader) {
   }
 }
 
-function createWindow() {
-  const iconPath = process.platform === 'win32'
-    ? path.join(__dirname, 'icon.ico')
-    : path.join(__dirname, 'magnitolalogo.png');
+function configureAppSession() {
+  const appSession = session.fromPartition(IN_MEMORY_PARTITION);
 
-  mainWindow = new BrowserWindow({
-    width: 860,
-    height: 520,
-    minWidth: 800,
-    minHeight: 460,
-    resizable: true,
-    maximizable: true,
-    fullscreenable: true,
-    title: 'MAGNITOLA',
-    icon: iconPath,
-    autoHideMenuBar: true,
-    backgroundColor: '#4c5844',
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-      webSecurity: false,
-      allowRunningInsecureContent: true
+  // Блокировка разрешений
+  appSession.setPermissionRequestHandler((webContents, permission, callback) => {
+    callback(false);
+  });
+  appSession.setPermissionCheckHandler(() => {
+    return false;
+  });
+
+  // Заголовки для API SoundCloud
+  appSession.webRequest.onBeforeSendHeaders(
+    { urls: ['https://*.soundcloud.com/*', 'https://*.sndcdn.com/*', 'https://*.soundcloud.cloud/*'] },
+    (details, callback) => {
+      details.requestHeaders['Origin'] = 'https://soundcloud.com';
+      details.requestHeaders['Referer'] = 'https://soundcloud.com/';
+      callback({ requestHeaders: details.requestHeaders });
     }
-  });
+  );
 
-  // Open external links (such as https://sync-line.pages.dev/) in the default web browser
-  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith('http:') || url.startsWith('https:')) {
-      shell.openExternal(url);
-      return { action: 'deny' };
+  // CORS-заголовки для API
+  appSession.webRequest.onHeadersReceived(
+    { urls: ['https://*.soundcloud.com/*', 'https://*.sndcdn.com/*', 'https://*.soundcloud.cloud/*'] },
+    (details, callback) => {
+      const responseHeaders = { ...details.responseHeaders };
+      responseHeaders['access-control-allow-origin'] = ['*'];
+      responseHeaders['access-control-allow-methods'] = ['GET, OPTIONS'];
+      responseHeaders['access-control-allow-headers'] = ['*'];
+      callback({ responseHeaders });
     }
-    return { action: 'allow' };
-  });
-
-  mainWindow.webContents.on('will-navigate', (event, url) => {
-    if (!url.startsWith('file://')) {
-      event.preventDefault();
-      shell.openExternal(url);
-    }
-  });
-
-  mainWindow.loadFile('index.html');
-
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
+  );
 }
 
-app.whenReady().then(() => {
-  // Handle media:// scheme with full HTTP 206 Partial Content (Range) support for precise seeking
-  protocol.handle(MEDIA_SCHEME, async (request) => {
-    return handleMediaRequest(request.url, request.headers.get('range'));
+function registerIpcHandlers() {
+  ipcMain.handle('get-default-downloads', (event) => {
+    if (!isTrustedSender(event)) return null;
+    return app.getPath('downloads');
   });
 
-  // Handle native folder selection dialog
-  ipcMain.handle('select-folder', async () => {
-    if (!mainWindow) return null;
+  ipcMain.handle('select-folder', async (event) => {
+    if (!isTrustedSender(event) || !mainWindow) return null;
     const result = await dialog.showOpenDialog(mainWindow, {
       properties: ['openDirectory', 'createDirectory']
     });
@@ -229,17 +255,249 @@ app.whenReady().then(() => {
     return null;
   });
 
-  createWindow();
+  ipcMain.handle('read-clipboard', (event) => {
+    if (!isTrustedSender(event)) return '';
+    return clipboard.readText();
+  });
 
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
+  ipcMain.handle('check-file-exists', async (event, payload) => {
+    if (!isTrustedSender(event)) return { exists: false };
+    if (!payload || typeof payload !== 'object') return { exists: false };
+
+    let { folder, fileName } = payload;
+    if (typeof folder !== 'string' || !folder.trim() || folder.includes('\0')) {
+      folder = app.getPath('downloads');
+    }
+    if (typeof fileName !== 'string' || !fileName.trim() || fileName.includes('\0')) {
+      return { exists: false };
+    }
+
+    const safeFileName = path.basename(fileName);
+    if (!safeFileName || safeFileName === '.' || safeFileName === '..') {
+      return { exists: false };
+    }
+
+    const resolvedFolder = path.resolve(folder);
+    const targetPath = path.join(resolvedFolder, safeFileName);
+    return {
+      exists: fs.existsSync(targetPath),
+      filePath: targetPath
+    };
+  });
+
+  ipcMain.handle('save-track', async (event, payload) => {
+    if (!isTrustedSender(event)) return { success: false, error: 'Unauthorized' };
+    if (!payload || typeof payload !== 'object') return { success: false, error: 'Invalid payload' };
+
+    let { folder, fileName, buffer } = payload;
+    if (typeof folder !== 'string' || !folder.trim() || folder.includes('\0')) {
+      folder = app.getPath('downloads');
+    }
+    if (typeof fileName !== 'string' || !fileName.trim() || fileName.includes('\0')) {
+      return { success: false, error: 'Invalid file name' };
+    }
+
+    // Защита от path traversal
+    const safeFileName = path.basename(fileName);
+    if (!safeFileName || safeFileName === '.' || safeFileName === '..') {
+      return { success: false, error: 'Unsafe file name' };
+    }
+
+    const resolvedFolder = path.resolve(folder);
+    const targetPath = path.join(resolvedFolder, safeFileName);
+
+    try {
+      if (!fs.existsSync(resolvedFolder)) {
+        await fs.promises.mkdir(resolvedFolder, { recursive: true });
+      }
+      const fileData = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
+      await fs.promises.writeFile(targetPath, fileData);
+      return { success: true, filePath: targetPath };
+    } catch (err) {
+      console.error('[save-track] Error saving file:', err);
+      return { success: false, error: err.message };
     }
   });
+
+  ipcMain.handle('scan-library', async (event, folder) => {
+    if (!isTrustedSender(event)) return [];
+    if (typeof folder !== 'string' || !folder.trim() || folder.includes('\0')) return [];
+
+    const resolvedFolder = path.resolve(folder);
+    try {
+      if (!fs.existsSync(resolvedFolder)) return [];
+      const stat = await fs.promises.stat(resolvedFolder);
+      if (!stat.isDirectory()) return [];
+
+      const files = await fs.promises.readdir(resolvedFolder);
+      const supported = ['.mp3', '.wav', '.ogg', '.flac', '.m4a', '.aac'];
+      const mediaFiles = files.filter(f => supported.includes(path.extname(f).toLowerCase()));
+
+      const list = [];
+      for (const fileName of mediaFiles) {
+        const fullPath = path.join(resolvedFolder, fileName);
+        const baseName = path.parse(fileName).name;
+        let artist = 'MAGNItola';
+        let title = baseName;
+
+        if (baseName.includes(' - ')) {
+          const parts = baseName.split(' - ');
+          artist = parts[0].trim();
+          title = parts.slice(1).join(' - ').trim();
+        }
+
+        let artworkDataUrl = null;
+        let fd = null;
+        try {
+          fd = fs.openSync(fullPath, 'r');
+          let headerBuf = Buffer.alloc(128 * 1024);
+          let bytesRead = fs.readSync(fd, headerBuf, 0, headerBuf.length, 0);
+
+          if (bytesRead > 10 && headerBuf[0] === 0x49 && headerBuf[1] === 0x44 && headerBuf[2] === 0x33) {
+            const tagSize = ((headerBuf[6] & 0x7F) << 21) | ((headerBuf[7] & 0x7F) << 14) | ((headerBuf[8] & 0x7F) << 7) | (headerBuf[9] & 0x7F);
+            if (tagSize + 10 > headerBuf.length && tagSize < 10 * 1024 * 1024) {
+              headerBuf = Buffer.alloc(tagSize + 10);
+              bytesRead = fs.readSync(fd, headerBuf, 0, tagSize + 10, 0);
+            }
+            fs.closeSync(fd);
+            fd = null;
+
+            const apicIdx = headerBuf.indexOf('APIC');
+            if (apicIdx !== -1) {
+              const frameSize = headerBuf.readUInt32BE(apicIdx + 4);
+              const frameData = headerBuf.subarray(apicIdx + 10, apicIdx + 10 + frameSize);
+              const jpegStart = frameData.indexOf(Buffer.from([0xFF, 0xD8, 0xFF]));
+              const pngStart = frameData.indexOf(Buffer.from([0x89, 0x50, 0x4E, 0x47]));
+
+              const imgStart = jpegStart !== -1 ? jpegStart : pngStart;
+              const mime = jpegStart !== -1 ? 'image/jpeg' : 'image/png';
+
+              if (imgStart !== -1) {
+                const imgBuf = frameData.subarray(imgStart);
+                artworkDataUrl = `data:${mime};base64,${imgBuf.toString('base64')}`;
+              }
+            }
+          }
+        } catch (e) {
+        } finally {
+          if (fd !== null) {
+            try { fs.closeSync(fd); } catch {}
+          }
+        }
+
+        list.push({
+          id: fullPath,
+          filePath: fullPath,
+          fileName,
+          title,
+          artist,
+          artworkDataUrl,
+          duration: 0
+        });
+      }
+
+      return list;
+    } catch (err) {
+      console.error('[scan-library] Error scanning library:', err);
+      return [];
+    }
+  });
+}
+
+function createWindow() {
+  const iconPath = path.join(__dirname, 'icon.ico');
+
+  mainWindow = new BrowserWindow({
+    width: 950,
+    height: 600,
+    minWidth: 950,
+    minHeight: 600,
+    resizable: true,
+    maximizable: true,
+    fullscreenable: true,
+    title: 'MAGNItola',
+    icon: iconPath,
+    autoHideMenuBar: true,
+    backgroundColor: '#4c5844',
+    webPreferences: {
+      partition: IN_MEMORY_PARTITION,
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: true,
+      webSecurity: true,
+      allowRunningInsecureContent: false,
+      spellcheck: false,
+      navigateOnDragDrop: false
+    }
+  });
+
+  // Внешние ссылки в браузере
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol === 'https:') {
+        shell.openExternal(parsed.href);
+      }
+    } catch {}
+    return { action: 'deny' };
+  });
+
+  // Запрет навигации внутри окна
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    event.preventDefault();
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol === 'https:') {
+        shell.openExternal(parsed.href);
+      }
+    } catch {}
+  });
+
+  // Запрет webview
+  mainWindow.webContents.on('will-attach-webview', (event) => {
+    event.preventDefault();
+  });
+
+  // Отключение DevTools в релизе
+  if (app.isPackaged) {
+    mainWindow.webContents.on('devtools-opened', () => {
+      mainWindow.webContents.closeDevTools();
+    });
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+      if (input.key === 'F12' || (input.control && input.shift && (input.key === 'I' || input.key === 'i'))) {
+        event.preventDefault();
+      }
+    });
+  }
+
+  mainWindow.loadFile('index.html');
+
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
+}
+
+app.whenReady().then(() => {
+  // Потоковое чтение локальных треков
+  const mediaHandler = async (request) => {
+    return handleMediaRequest(request.url, request.headers.get('range'));
+  };
+  protocol.handle(MEDIA_SCHEME, mediaHandler);
+  session.fromPartition(IN_MEMORY_PARTITION).protocol.handle(MEDIA_SCHEME, mediaHandler);
+
+  configureAppSession();
+  registerIpcHandlers();
+  createWindow();
+});
+
+app.on('second-instance', () => {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+  }
 });
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  app.quit();
 });
