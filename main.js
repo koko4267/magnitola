@@ -330,7 +330,7 @@ function registerIpcHandlers() {
       if (!stat.isDirectory()) return [];
 
       const files = await fs.promises.readdir(resolvedFolder);
-      const supported = ['.mp3', '.wav', '.ogg', '.flac', '.m4a', '.aac'];
+      const supported = ['.mp3', '.wav', '.ogg', '.flac', '.m4a', '.aac', '.opus'];
       const mediaFiles = files.filter(f => supported.includes(path.extname(f).toLowerCase()));
 
       const list = [];
