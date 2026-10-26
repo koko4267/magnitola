@@ -3,10 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: media:; media-src 'self' media: data:; connect-src https:; object-src 'none'; font-src 'none'; base-uri 'none'; form-action 'none';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: media:; media-src 'self' media: data:; font-src 'self'; connect-src https:; object-src 'none'; base-uri 'none'; form-action 'none';">
   <title>MAGNItola</title>
   <link rel="icon" type="image/x-icon" href="icon.ico">
   <style>
+    @font-face {
+      font-family: 'JetBrains Mono';
+      src: url('fonts/JetBrainsMono-Regular.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'JetBrains Mono';
+      src: url('fonts/JetBrainsMono-Bold.woff2') format('woff2');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'JetBrains Mono';
+      src: url('fonts/JetBrainsMono-Italic.woff2') format('woff2');
+      font-weight: 400;
+      font-style: italic;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'JetBrains Mono';
+      src: url('fonts/JetBrainsMono-BoldItalic.woff2') format('woff2');
+      font-weight: 700;
+      font-style: italic;
+      font-display: swap;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -18,7 +50,12 @@
       user-select: none;
     }
 
+    button, input, select, textarea {
+      font-family: inherit;
+    }
+
     :root {
+      --font-main: "JetBrains Mono", monospace;
       --bg-main: #4c5844;
       --bg-header: #3b4435;
       --bg-dark: #282e22;
@@ -43,7 +80,7 @@
     body {
       background-color: var(--bg-main);
       color: var(--text-main);
-      font-family: "Tahoma", "Segoe UI", Arial, sans-serif;
+      font-family: var(--font-main);
       font-size: 11px;
       line-height: 1.35;
       height: 100vh;
@@ -91,7 +128,7 @@
       border-bottom: 1px solid var(--border-shadow);
       border-right: 1px solid var(--border-shadow);
       padding: 4px 12px;
-      font-family: "Tahoma", sans-serif;
+      font-family: var(--font-main);
       font-size: 11px;
       font-weight: bold;
       cursor: pointer;
@@ -165,7 +202,7 @@
       border-bottom: 1px solid var(--border-light);
       border-right: 1px solid var(--border-light);
       padding: 4px 8px;
-      font-family: "Lucida Console", "Consolas", monospace;
+      font-family: var(--font-main);
       font-size: 11px;
       height: 26px;
       width: 100%;
@@ -265,7 +302,7 @@
         var(--green-dark) 7px,
         var(--green-dark) 9px
       );
-      transition: width 0.1s linear;
+      transition: none !important;
     }
 
     .progress-text {
@@ -289,7 +326,7 @@
       margin-top: 4px;
       font-size: 10px;
       color: var(--text-muted);
-      font-family: "Lucida Console", "Consolas", monospace;
+      font-family: var(--font-main);
     }
     .quote-box {
       margin-top: 6px;
@@ -358,9 +395,8 @@
       background-color: #2e3629;
     }
 
-    .syncline-widget:hover .syncline-btn {
-      background-color: var(--btn-hover);
-      color: #ffffff;
+    .syncline-widget:hover .syncline-text {
+      color: var(--text-bright);
     }
 
     .syncline-logo-img {
@@ -375,24 +411,7 @@
       font-weight: bold;
       color: var(--accent-gold);
       letter-spacing: 0.3px;
-    }
-
-    .syncline-btn {
-      box-sizing: border-box;
-      background-color: var(--btn-bg);
-      color: var(--text-bright);
-      border-top: 1px solid var(--border-highlight);
-      border-left: 1px solid var(--border-highlight);
-      border-bottom: 1px solid var(--border-shadow);
-      border-right: 1px solid var(--border-shadow);
-      padding: 1px 6px;
-      font-size: 9px;
-      font-weight: bold;
-      height: 18px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
+    }
     .single-lang-btn {
       box-sizing: border-box;
       display: inline-flex;
@@ -579,15 +598,9 @@
       top: 0;
       left: 0;
       height: 100%;
-      background: repeating-linear-gradient(
-        90deg,
-        var(--green-bar) 0px,
-        var(--green-bar) 7px,
-        var(--green-dark) 7px,
-        var(--green-dark) 9px
-      );
+      background: var(--green-bar);
       pointer-events: none;
-      transition: width 0.05s linear;
+      transition: width 0.1s linear;
     }
 
     .player-seek-input {
@@ -606,7 +619,7 @@
     .seek-time-row {
       display: flex;
       justify-content: space-between;
-      font-family: "Lucida Console", "Consolas", monospace;
+      font-family: var(--font-main);
       font-size: 10px;
       color: var(--accent-gold);
     }
@@ -781,7 +794,6 @@
           >
             <img src="synclinelogo.jpg" alt="Syncline Logo" class="syncline-logo-img" />
             <span class="syncline-text">try syncline</span>
-            <span class="syncline-btn">Open ↗</span>
           </a>
 
           <div class="bottom-right-group">
@@ -945,10 +957,10 @@
         .replace(/'/g, '&#39;');
     }
 
-    const api = (typeof window !== 'undefined' && window.electronAPI) || null;
+    const api = window.electronAPI || null;
 
     let downloadFolder = localStorage.getItem('magnitola_save_folder') || '';
-    if (!downloadFolder && api) {
+    if (!downloadFolder && api?.getDefaultDownloadsFolder) {
       api.getDefaultDownloadsFolder().then(defPath => {
         if (!downloadFolder && defPath) {
           downloadFolder = defPath;
@@ -975,6 +987,32 @@
     const currentTrackArtist = document.getElementById('currentTrackArtist');
     const trackProgressFill = document.getElementById('trackProgressFill');
     const trackProgressText = document.getElementById('trackProgressText');
+    const progressTrackElement = document.querySelector('.progress-track');
+
+    function setDownloadProgress(pct) {
+      const clamped = Math.max(0, Math.min(100, pct));
+      trackProgressText.textContent = `${Math.round(clamped)}%`;
+
+      if (clamped <= 0) {
+        trackProgressFill.style.width = '0px';
+        return;
+      }
+      if (clamped >= 100) {
+        trackProgressFill.style.width = '100%';
+        return;
+      }
+
+      const trackWidth = progressTrackElement ? progressTrackElement.clientWidth : 0;
+      const step = 9;
+      if (trackWidth > step) {
+        const totalCells = Math.floor(trackWidth / step);
+        const filledCells = Math.max(1, Math.floor((clamped / 100) * totalCells));
+        trackProgressFill.style.width = `${filledCells * step}px`;
+      } else {
+        trackProgressFill.style.width = `${clamped}%`;
+      }
+    }
+
     const downloadSizeStats = document.getElementById('downloadSizeStats');
     const downloadSpeedStats = document.getElementById('downloadSpeedStats');
     const downloadCounterStats = document.getElementById('downloadCounterStats');
@@ -1051,20 +1089,17 @@
     }
 
     btnBrowseFolder.addEventListener('click', async () => {
-      if (api && api.selectFolder) {
-        try {
-          const selected = await api.selectFolder();
-          if (selected) {
-            downloadFolder = selected;
-            localStorage.setItem('magnitola_save_folder', selected);
-            updateSavePathDisplay();
-            scanAndLoadLibrary(selected);
-          }
-        } catch (err) {
-          console.error('Failed to open folder picker dialog:', err);
+      if (!api?.selectFolder) return;
+      try {
+        const selected = await api.selectFolder();
+        if (selected) {
+          downloadFolder = selected;
+          localStorage.setItem('magnitola_save_folder', selected);
+          updateSavePathDisplay();
+          scanAndLoadLibrary(selected);
         }
-      } else {
-        alert("Folder picking is managed automatically in desktop environment.");
+      } catch (err) {
+        console.error('Folder picker error:', err);
       }
     });
 
@@ -1094,8 +1129,7 @@
       }
     }
 
-        // Сборка тега ID3v2.3
-function createId3v23Tag(title, artist, artworkBuffer) {
+    function createId3v23Tag(title, artist, artworkBuffer) {
       function makeTextFrame(frameId, text) {
         if (!text) return null;
         const bytes = [0x01, 0xFF, 0xFE]; 
@@ -1128,7 +1162,7 @@ function createId3v23Tag(title, artist, artworkBuffer) {
         let p = 0;
         body[p++] = 0x00; 
         for (let b of mimeBytes) body[p++] = b;
-        body[p++] = 0x03; // Тип: обложка
+        body[p++] = 0x03;
         body[p++] = 0x00;
         body.set(imgBytes, p);
 
@@ -1178,6 +1212,29 @@ function createId3v23Tag(title, artist, artworkBuffer) {
       return (name || 'Track').replace(/[<>:"/\\|?*]+/g, '_').trim().replace(/\.+$/, '');
     }
 
+    function sanitizeFolderName(name) {
+      if (!name || typeof name !== 'string') return '';
+      let clean = name.replace(/[<>:"/\\|?*]+/g, '_').replace(/[\x00-\x1f]/g, '').trim().replace(/\.+$/, '');
+      const reserved = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i;
+      if (reserved.test(clean)) clean += '_';
+      return clean;
+    }
+
+    function getCoverArtUrl(url) {
+      return url ? url.replace('-large', '-t500x500') : null;
+    }
+
+    function bufferToDataUrl(buf, mimeType = 'image/jpeg') {
+      let binary = '';
+      const len = buf.byteLength;
+      const chunkSize = 0x8000;
+      for (let i = 0; i < len; i += chunkSize) {
+        const sub = buf.subarray(i, Math.min(i + chunkSize, len));
+        binary += String.fromCharCode.apply(null, sub);
+      }
+      return `data:${mimeType};base64,${btoa(binary)}`;
+    }
+
     function formatTime(seconds) {
       if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
       const mins = Math.floor(seconds / 60);
@@ -1186,8 +1243,8 @@ function createId3v23Tag(title, artist, artworkBuffer) {
     }
 
     async function encodeAudioBufferToMp3(audioBuffer, bitrate = 192, onProgress = null) {
-      const lame = (typeof window !== 'undefined' && window.lamejs) || (typeof lamejs !== 'undefined' && lamejs);
-      if (!lame || !lame.Mp3Encoder) {
+      const lame = window.lamejs || (typeof lamejs !== 'undefined' ? lamejs : null);
+      if (!lame?.Mp3Encoder) {
         throw new Error('MP3 encoder not initialized');
       }
 
@@ -1204,7 +1261,7 @@ function createId3v23Tag(title, artist, artworkBuffer) {
       let lastYield = Date.now();
 
       for (let i = 0; i < numSamples; i += sampleBlockSize) {
-        if (typeof cancelRequested !== 'undefined' && cancelRequested) {
+        if (cancelRequested) {
           throw new Error('Encoding cancelled');
         }
 
@@ -1261,7 +1318,6 @@ function createId3v23Tag(title, artist, artworkBuffer) {
     async function resolveSoundCloudUrl(url) {
       let cleanUrl = url.trim();
 
-      // Разворачиваем короткую ссылку
       if (cleanUrl.includes('on.soundcloud.com')) {
         try {
           const resp = await fetch(cleanUrl, { method: 'GET', redirect: 'follow' });
@@ -1273,7 +1329,6 @@ function createId3v23Tag(title, artist, artworkBuffer) {
         }
       }
 
-      // Очистка URL для resolve API
       let resolveTarget = cleanUrl.replace(/\/likes\/?(\?.*)?$/i, '').replace(/\/+$/, '');
       const resolveApi = `https://api-v2.soundcloud.com/resolve?url=${encodeURIComponent(resolveTarget)}&client_id=${clientId}`;
 
@@ -1285,10 +1340,14 @@ function createId3v23Tag(title, artist, artworkBuffer) {
       const data = await resp.json();
       const kind = data.kind;
       let trackQueue = [];
+      let subFolder = null;
 
       if (kind === 'track') {
         trackQueue = [data];
+        subFolder = null;
       } else if (kind === 'playlist' || kind === 'system-playlist') {
+        const title = (data.title || '').trim();
+        subFolder = sanitizeFolderName(title) || (data.set_type === 'album' ? 'Album' : 'Playlist');
         const tracksElement = data.tracks || [];
         const trackIdsToFetch = [];
 
@@ -1313,7 +1372,7 @@ function createId3v23Tag(title, artist, artworkBuffer) {
           }
         }
       } else if (kind === 'user') {
-        // Пагинация по лайкам профиля
+        subFolder = 'Likes';
         const userId = data.id;
         let likesUrl = `https://api-v2.soundcloud.com/users/${userId}/likes?client_id=${clientId}&limit=50`;
 
@@ -1349,20 +1408,26 @@ function createId3v23Tag(title, artist, artworkBuffer) {
         throw new Error(L.invalidUrlError);
       }
 
-      return trackQueue;
+      return {
+        tracks: trackQueue,
+        subFolder: subFolder,
+        kind: kind,
+        title: data.title || null
+      };
     }
 
-    async function downloadTrack(track, index, total) {
+    async function downloadTrack(track, index, total, subFolder = null) {
       const title = track.title || 'Untitled';
       const artist = track.user ? (track.user.username || 'Unknown Artist') : 'MAGNItola';
       const artwork = track.artwork_url || (track.user ? track.user.avatar_url : null);
       const fileName = `${sanitizeFileName(artist)} - ${sanitizeFileName(title)}.mp3`;
 
+      setDownloadProgress(0);
       currentTrackTitle.textContent = title;
       currentTrackArtist.textContent = artist;
 
-      if (artwork) {
-        const hiResArtwork = artwork.replace('-large', '-t500x500');
+      const hiResArtwork = getCoverArtUrl(artwork);
+      if (hiResArtwork) {
         albumArtImg.src = hiResArtwork;
         albumArtImg.style.display = 'block';
         albumArtIcon.style.display = 'none';
@@ -1371,14 +1436,12 @@ function createId3v23Tag(title, artist, artworkBuffer) {
         albumArtIcon.style.display = 'block';
       }
 
-      // Пропуск уже скачанного файла
-      if (api && api.checkFileExists) {
+      if (api?.checkFileExists) {
         const targetDir = downloadFolder || (await api.getDefaultDownloadsFolder());
-        const check = await api.checkFileExists({ folder: targetDir, fileName });
-        if (check && check.exists) {
+        const check = await api.checkFileExists({ folder: targetDir, subFolder, fileName });
+        if (check?.exists) {
           lblCurrentStatus.textContent = `${L.currentStatus || 'Current download:'} ${L.alreadyExists || 'Already exists'}`;
-          trackProgressFill.style.width = '100%';
-          trackProgressText.textContent = '100%';
+          setDownloadProgress(100);
           downloadSpeedStats.textContent = 'SKIP';
           downloadSizeStats.textContent = '-- / -- MB';
           await new Promise(r => setTimeout(r, 150));
@@ -1390,7 +1453,6 @@ function createId3v23Tag(title, artist, artworkBuffer) {
         const transcodings = track.media && track.media.transcodings ? track.media.transcodings : [];
         if (transcodings.length === 0) return false;
 
-        // Сортировка потоков по качеству
         const sorted = [...transcodings].sort((a, b) => {
           let scoreA = 0, scoreB = 0;
           if (a.format?.protocol === 'progressive' && a.format?.mime_type === 'audio/mpeg') scoreA += 500;
@@ -1420,7 +1482,6 @@ function createId3v23Tag(title, artist, artworkBuffer) {
           const audioCdnUrl = streamJson.url;
           if (!audioCdnUrl) continue;
 
-          // Скачивание прямого MP3 потока
           if (selected.format?.protocol === 'progressive' || !audioCdnUrl.includes('.m3u8')) {
             const audioResp = await fetch(audioCdnUrl);
             if (!audioResp.ok) continue;
@@ -1446,8 +1507,7 @@ function createId3v23Tag(title, artist, artworkBuffer) {
               const willEncode = !(selected.format?.protocol === 'progressive' && selected.format?.mime_type === 'audio/mpeg');
               const rawPercent = contentLength > 0 ? (receivedBytes / contentLength * 100) : 0;
               const displayPct = willEncode ? rawPercent * 0.7 : rawPercent;
-              trackProgressFill.style.width = `${Math.min(100, displayPct)}%`;
-              trackProgressText.textContent = `${displayPct.toFixed(0)}%`;
+              setDownloadProgress(displayPct);
 
               const curMb = (receivedBytes / 1024 / 1024).toFixed(2);
               const totalMb = contentLength > 0 ? (contentLength / 1024 / 1024).toFixed(2) : '?';
@@ -1468,7 +1528,6 @@ function createId3v23Tag(title, artist, artworkBuffer) {
             }
             break;
           } else {
-            // Скачивание HLS потока (.m3u8)
             const hlsResp = await fetch(audioCdnUrl);
             if (!hlsResp.ok) continue;
             let m3u8Text = await hlsResp.text();
@@ -1489,7 +1548,6 @@ function createId3v23Tag(title, artist, artworkBuffer) {
               if (varResp.ok) m3u8Text = await varResp.text();
             }
 
-            // Init-сегмент для CMAF/fMP4
             const mapMatch = /#EXT-X-MAP:URI="([^"]+)"/i.exec(m3u8Text);
             const initUrl = mapMatch ? new URL(mapMatch[1], targetPlaylistUrl).href : null;
 
@@ -1518,11 +1576,10 @@ function createId3v23Tag(title, artist, artworkBuffer) {
                   receivedBytes += initBuf.length;
                 }
               } catch (e) {
-                console.warn('Could not fetch HLS init segment:', e);
+                console.warn('HLS init segment fetch error:', e);
               }
             }
 
-            // Параллельная загрузка сегментов
             const concurrency = 6;
             let nextIndex = 0;
             let hasError = false;
@@ -1540,8 +1597,7 @@ function createId3v23Tag(title, artist, artworkBuffer) {
 
                   const rawPercent = (downloadedCount / totalSegments) * 100;
                   const displayPct = rawPercent * 0.7;
-                  trackProgressFill.style.width = `${Math.min(100, displayPct)}%`;
-                  trackProgressText.textContent = `${displayPct.toFixed(0)}%`;
+                  setDownloadProgress(displayPct);
 
                   const curMb = (receivedBytes / 1024 / 1024).toFixed(2);
                   downloadSizeStats.textContent = `${curMb} MB`;
@@ -1587,26 +1643,19 @@ function createId3v23Tag(title, artist, artworkBuffer) {
 
         if (!audioBuffer) return false;
 
-        // Загрузка обложки 500x500
         let artworkBuffer = null;
         let artworkBase64 = null;
-        if (artwork) {
+        if (hiResArtwork) {
           try {
-            const hiResCover = artwork.replace('-large', '-t500x500');
-            const coverResp = await fetch(hiResCover);
+            const coverResp = await fetch(hiResArtwork);
             if (coverResp.ok) {
               const cBuf = await coverResp.arrayBuffer();
               artworkBuffer = new Uint8Array(cBuf);
-              let binary = '';
-              for (let i = 0; i < artworkBuffer.byteLength; i++) {
-                binary += String.fromCharCode(artworkBuffer[i]);
-              }
-              artworkBase64 = `data:image/jpeg;base64,${btoa(binary)}`;
+              artworkBase64 = bufferToDataUrl(artworkBuffer, 'image/jpeg');
             }
-          } catch (e) {}
+          } catch {}
         }
 
-        // Конвертация в MP3 192k
         let cleanMp3Audio = null;
         const isDirectMp3 = audioBuffer.length > 4 &&
           ((audioBuffer[0] === 0xFF && (audioBuffer[1] & 0xE0) === 0xE0) ||
@@ -1614,12 +1663,10 @@ function createId3v23Tag(title, artist, artworkBuffer) {
 
         if (isDirectMp3) {
           cleanMp3Audio = audioBuffer;
-          trackProgressFill.style.width = '100%';
-          trackProgressText.textContent = '100%';
+          setDownloadProgress(100);
         } else {
           lblCurrentStatus.textContent = `${L.currentStatus || 'Current download:'} ${L.encoding || 'Encoding MP3...'}`;
-          trackProgressFill.style.width = '70%';
-          trackProgressText.textContent = '70%';
+          setDownloadProgress(70);
           downloadSpeedStats.textContent = 'MP3 192k';
 
           const actx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1628,34 +1675,31 @@ function createId3v23Tag(title, artist, artworkBuffer) {
             const decodedPcm = await actx.decodeAudioData(abCopy);
             cleanMp3Audio = await encodeAudioBufferToMp3(decodedPcm, 192, (ratio) => {
               const combinedPct = 70 + (ratio * 30);
-              trackProgressFill.style.width = `${Math.min(100, combinedPct).toFixed(1)}%`;
-              trackProgressText.textContent = `${Math.min(100, combinedPct).toFixed(0)}%`;
+              setDownloadProgress(combinedPct);
             });
           } finally {
             if (actx && actx.close) actx.close().catch(() => {});
           }
-          trackProgressFill.style.width = '100%';
-          trackProgressText.textContent = '100%';
+          setDownloadProgress(100);
         }
 
         if (!cleanMp3Audio) return false;
 
-        // Внедрение тегов ID3v2.3
         const id3Tag = createId3v23Tag(title, artist, artworkBuffer);
         const combined = new Uint8Array(id3Tag.length + cleanMp3Audio.length);
         combined.set(id3Tag, 0);
         combined.set(cleanMp3Audio, id3Tag.length);
 
-        // Сохранение трека на диск
-        if (api && api.saveTrack) {
+        if (api?.saveTrack) {
           const targetDir = downloadFolder || (await api.getDefaultDownloadsFolder());
           const saveRes = await api.saveTrack({
             folder: targetDir,
+            subFolder,
             fileName,
             buffer: combined
           });
 
-          if (saveRes && saveRes.success) {
+          if (saveRes?.success) {
             addTrackToPlayer({
               id: saveRes.filePath,
               filePath: saveRes.filePath,
@@ -1666,23 +1710,9 @@ function createId3v23Tag(title, artist, artworkBuffer) {
               duration: Math.round(track.duration ? track.duration / 1000 : 0)
             });
           }
-        } else {
-          // Запасное сохранение в браузере
-          const blob = new Blob([combined], { type: 'audio/mpeg' });
-          const bUrl = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = bUrl;
-          a.download = fileName;
-          document.body.appendChild(a);
-          a.click();
-          setTimeout(() => {
-            document.body.removeChild(a);
-            URL.revokeObjectURL(bUrl);
-          }, 2000);
         }
 
-        trackProgressFill.style.width = '100%';
-        trackProgressText.textContent = '100%';
+        setDownloadProgress(100);
         return true;
 
       } catch (err) {
@@ -1708,11 +1738,19 @@ function createId3v23Tag(title, artist, artworkBuffer) {
       currentTrackArtist.textContent = "MAGNItola";
 
       try {
-        const queue = await resolveSoundCloudUrl(rawUrl);
+        const result = await resolveSoundCloudUrl(rawUrl);
+        const queue = result ? result.tracks : [];
+        const subFolder = result ? result.subFolder : null;
 
         if (!queue || queue.length === 0) {
           alert(L.noTracksFound);
           return;
+        }
+
+        const targetDir = downloadFolder || (api?.getDefaultDownloadsFolder ? await api.getDefaultDownloadsFolder() : null);
+        if (subFolder && api?.ensureFolder && targetDir) {
+          await api.ensureFolder({ folder: targetDir, subFolder });
+          lblCurrentStatus.textContent = (L.currentStatus || 'Current download:') + ' [' + subFolder + ']';
         }
 
         const total = queue.length;
@@ -1721,7 +1759,7 @@ function createId3v23Tag(title, artist, artworkBuffer) {
         for (let i = 0; i < total; i++) {
           if (cancelRequested) break;
           downloadCounterStats.textContent = `${L.trackPrefix} ${i + 1} ${L.fromWord} ${total}`;
-          const ok = await downloadTrack(queue[i], i + 1, total);
+          const ok = await downloadTrack(queue[i], i + 1, total, subFolder);
           if (ok) completed++;
         }
 
@@ -1763,7 +1801,7 @@ function createId3v23Tag(title, artist, artworkBuffer) {
     }
 
     async function scanAndLoadLibrary(folder) {
-      if (!api || !api.scanLibrary || !folder) return;
+      if (!api?.scanLibrary || !folder) return;
       try {
         const tracks = await api.scanLibrary(folder);
         libraryTracks = tracks || [];
@@ -1979,7 +2017,6 @@ function createId3v23Tag(title, artist, artworkBuffer) {
       }
     }
 
-    // Перемотка кликом или drag
     playerSeekWrapper.addEventListener('pointerdown', (e) => {
       if (playerSeekInput.disabled || !currentPlayingTrack) return;
       isDraggingSeek = true;
@@ -2027,17 +2064,12 @@ function createId3v23Tag(title, artist, artworkBuffer) {
 
     btnPaste.addEventListener('click', async () => {
       try {
-        let text = '';
-        if (api && api.readClipboard) {
-          text = await api.readClipboard();
-        } else if (navigator.clipboard && navigator.clipboard.readText) {
-          text = await navigator.clipboard.readText();
-        }
+        const text = api?.readClipboard ? await api.readClipboard() : '';
         if (text) {
           inputUrl.value = text;
           checkQuoteVisibility();
         }
-      } catch (err) {
+      } catch {
         inputUrl.focus();
       }
     });
@@ -2066,6 +2098,6 @@ function createId3v23Tag(title, artist, artworkBuffer) {
         scanAndLoadLibrary(downloadFolder);
       }
     });
-  </script>
+</script>
 </body>
 </html>

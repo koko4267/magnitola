@@ -14,8 +14,10 @@ SoundCloud music downloader and offline player for Windows.
 
 ### Features
 - Downloads SoundCloud tracks, playlists, and user likes.
+- Automatic folder organization for playlists, albums, and likes.
 - Encodes audio to MP3 (192 kbps) with ID3v2.3 tags and cover art.
-- Built-in offline audio player.
+- Built-in offline audio player with seeking and library scanning.
+- Offline typography with bundled JetBrains Mono font.
 
 ### Requirements
 - Windows x64
@@ -24,8 +26,9 @@ SoundCloud music downloader and offline player for Windows.
 ### Run and build
 ```bash
 npm install
-npm start           # run
-npm.cmd run build   # build -> dist/MAGNItola-Windows.zip
+npm start               # run in dev mode
+npm.cmd run build       # build zip -> dist/MAGNItola-Windows.zip
+npm.cmd run build:exe   # build portable exe -> dist/MAGNItola-Windows.exe
 ```
 
 ### License
@@ -39,8 +42,10 @@ npm.cmd run build   # build -> dist/MAGNItola-Windows.zip
 
 ### Возможности
 - Скачивание треков, плейлистов и лайков SoundCloud.
+- Автоматическая раскладка по папкам для плейлистов, альбомов и лайков.
 - Сохранение в MP3 (192 кбит/с) с тегами ID3v2.3 и обложками.
-- Встроенный офлайн-аудиоплеер.
+- Встроенный офлайн-аудиоплеер с перемоткой и сканированием библиотеки.
+- Офлайн-типографика со встроенным шрифтом JetBrains Mono.
 
 ### Требования
 - Windows x64
@@ -49,8 +54,9 @@ npm.cmd run build   # build -> dist/MAGNItola-Windows.zip
 ### Запуск и сборка
 ```bash
 npm install
-npm start           # запуск
-npm.cmd run build   # сборка -> dist/MAGNItola-Windows.zip
+npm start               # запуск в режиме разработки
+npm.cmd run build       # сборка zip -> dist/MAGNItola-Windows.zip
+npm.cmd run build:exe   # сборка portable exe -> dist/MAGNItola-Windows.exe
 ```
 
 ### Лицензия

@@ -4,14 +4,12 @@ const os = require('os');
 const fs = require('fs');
 const { Readable } = require('stream');
 
-// Временная папка сессии
 const tempUserData = path.join(os.tmpdir(), `magnitola-session-${process.pid}`);
 try {
   fs.mkdirSync(tempUserData, { recursive: true });
 } catch {}
 app.setPath('userData', tempUserData);
 
-// Удаление старых сессий
 function cleanStaleTempDirs() {
   try {
     const tmp = os.tmpdir();
@@ -28,19 +26,16 @@ function cleanStaleTempDirs() {
 
 cleanStaleTempDirs();
 
-// Защита от второго экземпляра
 const gotSingleInstanceLock = app.requestSingleInstanceLock();
 if (!gotSingleInstanceLock) {
   app.quit();
   process.exit(0);
 }
 
-// Отключение дискового кэша
 app.commandLine.appendSwitch('disable-http-cache');
 app.commandLine.appendSwitch('disable-gpu-shader-disk-cache');
 app.commandLine.appendSwitch('disable-software-rasterizer');
 
-// Очистка сессии при выходе
 app.on('will-quit', () => {
   try {
     fs.rmSync(tempUserData, { recursive: true, force: true });
@@ -64,7 +59,6 @@ const ALLOWED_MEDIA_MIMES = {
   '.webp': 'image/webp'
 };
 
-// Регистрация схемы media://
 protocol.registerSchemesAsPrivileged([
   {
     scheme: MEDIA_SCHEME,
@@ -87,6 +81,28 @@ function isTrustedSender(event) {
   return event.senderFrame === mainWindow.webContents.mainFrame;
 }
 
+function resolveTargetDirectory(folder, subFolder) {
+  let resolved = typeof folder === 'string' && folder.trim() && !folder.includes('\0')
+    ? path.resolve(folder)
+    : app.getPath('downloads');
+
+  if (typeof subFolder === 'string' && subFolder.trim() && !subFolder.includes('\0')) {
+    const safe = path.basename(subFolder.trim().replace(/[<>:"/\\|?*]+/g, '_'));
+    if (safe && safe !== '.' && safe !== '..') {
+      resolved = path.join(resolved, safe);
+    }
+  }
+  return resolved;
+}
+
+function getSafeFileName(fileName) {
+  if (typeof fileName !== 'string' || !fileName.trim() || fileName.includes('\0')) {
+    return null;
+  }
+  const safe = path.basename(fileName);
+  return (!safe || safe === '.' || safe === '..') ? null : safe;
+}
+
 function parseMediaPath(requestUrl) {
   try {
     const url = new URL(requestUrl);
@@ -104,7 +120,6 @@ function parseMediaPath(requestUrl) {
     }
 
     if (rawPath.includes('\0')) return null;
-
     return path.resolve(path.normalize(rawPath));
   } catch {
     return null;
@@ -120,7 +135,6 @@ async function handleMediaRequest(requestUrl, rangeHeader) {
 
     const ext = path.extname(resolvedPath).toLowerCase();
     const mimeType = ALLOWED_MEDIA_MIMES[ext];
-
     if (!mimeType) {
       return new Response('Forbidden file type', { status: 403 });
     }
@@ -136,7 +150,6 @@ async function handleMediaRequest(requestUrl, rangeHeader) {
 
     const fileSize = stat.size;
 
-    // Range-запросы для перемотки
     if (rangeHeader) {
       const match = /^bytes=(\d*)-(\d*)$/.exec(rangeHeader.trim());
       if (!match) {
@@ -199,7 +212,7 @@ async function handleMediaRequest(requestUrl, rangeHeader) {
       });
     }
   } catch (err) {
-    console.error('[mediaProtocol] Error serving media request:', err);
+    console.error('[mediaProtocol]', err);
     return new Response('Internal Server Error', { status: 500 });
   }
 }
@@ -207,15 +220,11 @@ async function handleMediaRequest(requestUrl, rangeHeader) {
 function configureAppSession() {
   const appSession = session.fromPartition(IN_MEMORY_PARTITION);
 
-  // Блокировка разрешений
   appSession.setPermissionRequestHandler((webContents, permission, callback) => {
     callback(false);
   });
-  appSession.setPermissionCheckHandler(() => {
-    return false;
-  });
+  appSession.setPermissionCheckHandler(() => false);
 
-  // Заголовки для API SoundCloud
   appSession.webRequest.onBeforeSendHeaders(
     { urls: ['https://*.soundcloud.com/*', 'https://*.sndcdn.com/*', 'https://*.soundcloud.cloud/*'] },
     (details, callback) => {
@@ -225,7 +234,6 @@ function configureAppSession() {
     }
   );
 
-  // CORS-заголовки для API
   appSession.webRequest.onHeadersReceived(
     { urls: ['https://*.soundcloud.com/*', 'https://*.sndcdn.com/*', 'https://*.soundcloud.cloud/*'] },
     (details, callback) => {
@@ -260,24 +268,30 @@ function registerIpcHandlers() {
     return clipboard.readText();
   });
 
+  ipcMain.handle('ensure-folder', async (event, payload) => {
+    if (!isTrustedSender(event) || !payload || typeof payload !== 'object') {
+      return { success: false, error: 'Unauthorized or invalid payload' };
+    }
+    const resolvedFolder = resolveTargetDirectory(payload.folder, payload.subFolder);
+    try {
+      if (!fs.existsSync(resolvedFolder)) {
+        await fs.promises.mkdir(resolvedFolder, { recursive: true });
+      }
+      return { success: true, folderPath: resolvedFolder };
+    } catch (err) {
+      console.error('[ensure-folder]', err);
+      return { success: false, error: err.message };
+    }
+  });
+
   ipcMain.handle('check-file-exists', async (event, payload) => {
-    if (!isTrustedSender(event)) return { exists: false };
-    if (!payload || typeof payload !== 'object') return { exists: false };
-
-    let { folder, fileName } = payload;
-    if (typeof folder !== 'string' || !folder.trim() || folder.includes('\0')) {
-      folder = app.getPath('downloads');
-    }
-    if (typeof fileName !== 'string' || !fileName.trim() || fileName.includes('\0')) {
+    if (!isTrustedSender(event) || !payload || typeof payload !== 'object') {
       return { exists: false };
     }
+    const safeFileName = getSafeFileName(payload.fileName);
+    if (!safeFileName) return { exists: false };
 
-    const safeFileName = path.basename(fileName);
-    if (!safeFileName || safeFileName === '.' || safeFileName === '..') {
-      return { exists: false };
-    }
-
-    const resolvedFolder = path.resolve(folder);
+    const resolvedFolder = resolveTargetDirectory(payload.folder, payload.subFolder);
     const targetPath = path.join(resolvedFolder, safeFileName);
     return {
       exists: fs.existsSync(targetPath),
@@ -286,35 +300,24 @@ function registerIpcHandlers() {
   });
 
   ipcMain.handle('save-track', async (event, payload) => {
-    if (!isTrustedSender(event)) return { success: false, error: 'Unauthorized' };
-    if (!payload || typeof payload !== 'object') return { success: false, error: 'Invalid payload' };
-
-    let { folder, fileName, buffer } = payload;
-    if (typeof folder !== 'string' || !folder.trim() || folder.includes('\0')) {
-      folder = app.getPath('downloads');
+    if (!isTrustedSender(event) || !payload || typeof payload !== 'object') {
+      return { success: false, error: 'Unauthorized or invalid payload' };
     }
-    if (typeof fileName !== 'string' || !fileName.trim() || fileName.includes('\0')) {
-      return { success: false, error: 'Invalid file name' };
-    }
+    const safeFileName = getSafeFileName(payload.fileName);
+    if (!safeFileName) return { success: false, error: 'Invalid file name' };
 
-    // Защита от path traversal
-    const safeFileName = path.basename(fileName);
-    if (!safeFileName || safeFileName === '.' || safeFileName === '..') {
-      return { success: false, error: 'Unsafe file name' };
-    }
-
-    const resolvedFolder = path.resolve(folder);
+    const resolvedFolder = resolveTargetDirectory(payload.folder, payload.subFolder);
     const targetPath = path.join(resolvedFolder, safeFileName);
 
     try {
       if (!fs.existsSync(resolvedFolder)) {
         await fs.promises.mkdir(resolvedFolder, { recursive: true });
       }
-      const fileData = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
+      const fileData = Buffer.isBuffer(payload.buffer) ? payload.buffer : Buffer.from(payload.buffer);
       await fs.promises.writeFile(targetPath, fileData);
       return { success: true, filePath: targetPath };
     } catch (err) {
-      console.error('[save-track] Error saving file:', err);
+      console.error('[save-track]', err);
       return { success: false, error: err.message };
     }
   });
@@ -329,13 +332,21 @@ function registerIpcHandlers() {
       const stat = await fs.promises.stat(resolvedFolder);
       if (!stat.isDirectory()) return [];
 
-      const files = await fs.promises.readdir(resolvedFolder);
+      const files = await fs.promises.readdir(resolvedFolder, { recursive: true });
       const supported = ['.mp3', '.wav', '.ogg', '.flac', '.m4a', '.aac', '.opus'];
       const mediaFiles = files.filter(f => supported.includes(path.extname(f).toLowerCase()));
 
       const list = [];
-      for (const fileName of mediaFiles) {
-        const fullPath = path.join(resolvedFolder, fileName);
+      for (const relPath of mediaFiles) {
+        const fullPath = path.resolve(resolvedFolder, relPath);
+        try {
+          const fileStat = await fs.promises.stat(fullPath);
+          if (!fileStat.isFile()) continue;
+        } catch {
+          continue;
+        }
+
+        const fileName = path.basename(fullPath);
         const baseName = path.parse(fileName).name;
         let artist = 'MAGNItola';
         let title = baseName;
@@ -398,7 +409,7 @@ function registerIpcHandlers() {
 
       return list;
     } catch (err) {
-      console.error('[scan-library] Error scanning library:', err);
+      console.error('[scan-library]', err);
       return [];
     }
   });
@@ -432,7 +443,6 @@ function createWindow() {
     }
   });
 
-  // Внешние ссылки в браузере
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     try {
       const parsed = new URL(url);
@@ -443,7 +453,6 @@ function createWindow() {
     return { action: 'deny' };
   });
 
-  // Запрет навигации внутри окна
   mainWindow.webContents.on('will-navigate', (event, url) => {
     event.preventDefault();
     try {
@@ -454,12 +463,10 @@ function createWindow() {
     } catch {}
   });
 
-  // Запрет webview
   mainWindow.webContents.on('will-attach-webview', (event) => {
     event.preventDefault();
   });
 
-  // Отключение DevTools в релизе
   if (app.isPackaged) {
     mainWindow.webContents.on('devtools-opened', () => {
       mainWindow.webContents.closeDevTools();
@@ -479,7 +486,6 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
-  // Потоковое чтение локальных треков
   const mediaHandler = async (request) => {
     return handleMediaRequest(request.url, request.headers.get('range'));
   };

@@ -5,9 +5,14 @@
   "main": "main.js",
   "author": "MAGNItola",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/koko4267/magnitola.git"
+  },
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder --win zip --x64 --publish never"
+    "build": "electron-builder --win zip --x64 --publish never",
+    "build:exe": "electron-builder --win portable --x64 --publish never"
   },
   "keywords": [
     "music",
@@ -49,7 +54,8 @@
       "synclinelogo.jpg",
       "ru.png",
       "us.png",
-      "icon.ico"
+      "icon.ico",
+      "fonts/**/*"
     ]
   }
 }

@@ -1,4 +1,3 @@
-// Безопасный мост к main
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -7,5 +6,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveTrack: (payload) => ipcRenderer.invoke('save-track', payload),
   scanLibrary: (folder) => ipcRenderer.invoke('scan-library', folder),
   readClipboard: () => ipcRenderer.invoke('read-clipboard'),
-  checkFileExists: (payload) => ipcRenderer.invoke('check-file-exists', payload)
+  checkFileExists: (payload) => ipcRenderer.invoke('check-file-exists', payload),
+  ensureFolder: (payload) => ipcRenderer.invoke('ensure-folder', payload)
 });

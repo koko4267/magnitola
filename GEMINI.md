@@ -57,6 +57,7 @@ magnitola/
 ├── main.js               # Electron Main Process (Lifecycle, IPC, Media Protocol, Security)
 ├── preload.js            # Secure IPC bridge between Main and Renderer
 ├── index.html            # Complete Renderer Process (UI Layout, Styles, Logic, Player)
+├── fonts/                # Bundled JetBrains Mono webfonts (WOFF2 & license)
 ├── lame.min.js           # Client-side MP3 encoder library
 ├── demopic.jpg           # Application screenshot for documentation
 ├── magnitolalogo.jpg     # Application logo
@@ -81,6 +82,7 @@ magnitola/
     - `scan-library`: Recursively scans user folder for local audio tracks (.mp3, .wav, .ogg, .flac, .m4a, .aac, .opus) for the player.
     - `read-clipboard`: Safely reads system clipboard.
     - `check-file-exists`: Verifies file presence on disk.
+    - `ensure-folder`: Ensures pre-creation of playlist, album, or likes subdirectories.
   - **Window Hardening**: Blocks window creation, denies navigation outside `index.html`, opens external `https://` URLs strictly via system default browser (`shell.openExternal`), disables DevTools in packaged build.
 
 - **`preload.js` (Bridge)**:
@@ -106,7 +108,7 @@ Any agent modifying this codebase **must strictly adhere** to these security req
    - Never expose raw `ipcRenderer` or `child_process` to the renderer.
 2. **Content Security Policy (CSP)**:
    - `index.html` has a strict CSP. Do not introduce inline `eval()`, external scripts from CDNs, or unsafe protocol sources.
-   - Allowed sources: `script-src 'self' 'unsafe-inline'`, `img-src 'self' data: https: media:`, `media-src 'self' media: data:`, `connect-src https:`.
+   - Allowed sources: `script-src 'self' 'unsafe-inline'`, `img-src 'self' data: https: media:`, `media-src 'self' media: data:`, `font-src 'self'`, `connect-src https:`.
 3. **Local File Access**:
    - The renderer must **never** use `file://` URLs. Always use `media://local/${encodeURIComponent(filePath)}` for streaming local tracks or covers.
 
